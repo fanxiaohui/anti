@@ -41,16 +41,6 @@ function(cpp_only target file)
     target_compile_options(${target} PRIVATE -E -P -x c)
 endfunction()
 
-set(sign_password 12345678)     # customer product shall replace with customer's key
-set(sign_product test)          # customer product shall replace with customer's product name
-function(sign_image src dst)
-    add_custom_command(OUTPUT ${dst}
-        COMMAND vlrsign --pw ${sign_password} --pn ${sign_product} --ha Blake2
-            --img ${src} --out ${dst}
-        DEPENDS ${src}
-    )
-endfunction()
-
 function(add_appimg target ldscript)
     set(gen_ldscript ${target}_ldscript)
     set(target_map_file ${out_hex_dir}/${target}.map)
@@ -111,25 +101,42 @@ if(CONFIG_APPIMG_LOAD_FILE)
     add_custom_target(${target}_pacgen ALL DEPENDS ${pac_file})
 endif()
 
+string(TIMESTAMP VERSION "%Y%m%d%H%M%S")
+string(TIMESTAMP LONGDATE "%y%m%d")
+string(TIMESTAMP LONGTIME "%H%M%S")
 if(CONFIG_APPIMG_LOAD_FLASH)
-    set(target hello_flash)
-    add_appimg(${target} ${flash_ldscript} 
-    	hello_world.c
-    	demo.c)
+set(CUSTOMER_ID 000)
+    set(PLATFORM ${CUSTOMER_ID}_4G04_02_)
+    set(MEMORY BP_V)
+    set(APPVERSION 6.2.0.7)
+    set(target ${PLATFORM}${MEMORY}${APPVERSION}_${VERSION})
+    set(__FWVERSION__ ${PLATFORM}${MEMORY}${APPVERSION})
+    set(_BUILDINFO_ EybondFWG)
+    ADD_DEFINITIONS(-Wall -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unused-function)
+    ADD_DEFINITIONS(-DMAKE_TIME=\"${VERSION}\")
+    ADD_DEFINITIONS(-DMAKE_DATE=\"${LONGDATE}\")
+    ADD_DEFINITIONS(-DMAKE_TIME2=\"${LONGTIME}\")
+    ADD_DEFINITIONS(-DFWVERSION=\"${__FWVERSION__}\")
+    ADD_DEFINITIONS(-D__APPVERSION__=\"${APPVERSION}\")
+    ADD_DEFINITIONS(-DCUSTOMER=\"${CUSTOMER_ID}\")
+    ADD_DEFINITIONS(-DBUILDINFO=\"${_BUILDINFO_}\")
+    file(GLOB MAIN_FILES user/main/*.c) 
+    add_appimg(${target} ${flash_ldscript}
+    ${MAIN_FILES}
+    )   
+
     target_link_libraries(${target} PRIVATE ${libc_file_name} ${libm_file_name} ${libgcc_file_name})
 
     set(pac_file ${out_hex_dir}/${target}.pac)
     set(target_img_file ${out_hex_dir}/${target}.img)
-    set(target_sign_img_file ${out_hex_dir}/${target}.sign.img)
     pac_init_fdl(init_fdl)
-    sign_image(${target_img_file} ${target_sign_img_file})
     add_custom_command(OUTPUT ${pac_file}
         COMMAND python3 ${pacgen_py} ${init_fdl}
             cfg-image -i APPIMG -a ${CONFIG_APPIMG_FLASH_ADDRESS}
                 -s ${CONFIG_APPIMG_FLASH_SIZE}
-                -p ${target_sign_img_file}
+                -p ${target_img_file}
             pac-gen ${pac_file}
-        DEPENDS ${pacgen_py} ${target_sign_img_file}
+        DEPENDS ${pacgen_py} ${target_img_file}
         WORKING_DIRECTORY ${SOURCE_TOP_DIR}
     )
     add_custom_target(${target}_pacgen ALL DEPENDS ${pac_file})
@@ -142,15 +149,13 @@ if(CONFIG_APPIMG_LOAD_FILE)
 
     set(pac_file ${out_hex_dir}/${target}.pac)
     set(target_img_file ${out_hex_dir}/${target}.img)
-    set(target_sign_img_file ${out_hex_dir}/${target}.sign.img)
     pac_init_fdl(init_fdl)
-    sign_image(${target_img_file} ${target_sign_img_file})
     add_custom_command(OUTPUT ${pac_file}
         COMMAND python3 ${pacgen_py} ${init_fdl}
-            cfg-pack-file -i APPIMG -p ${target_sign_img_file}
+            cfg-pack-file -i APPIMG -p ${target_img_file}
                 -n ${CONFIG_APPIMG_LOAD_FILE_NAME}
             pac-gen ${pac_file}
-        DEPENDS ${pacgen_py} ${target_sign_img_file}
+        DEPENDS ${pacgen_py} ${target_img_file}
         WORKING_DIRECTORY ${SOURCE_TOP_DIR}
     )
     add_custom_target(${target}_pacgen ALL DEPENDS ${pac_file})
