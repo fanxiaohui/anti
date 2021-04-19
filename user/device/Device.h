@@ -1,13 +1,11 @@
-/**************Copyright(C)锟斤拷2015-2026锟斤拷Shenzhen Eybond Co., Ltd.***************
-  *@brief   : Hard.c 锟借备锟皆接碉拷元硬锟斤拷锟接口层定锟斤拷
-  *@notes   : 2017.04.20 CGQ 锟斤拷锟斤拷   
+/*****************************
 *******************************************************************************/
 #ifndef __DEVICE_H
 #define __DEVICE_H	 
 
-#include "Typedef.h"
-#include "List.h"
-#include "deviceIO.h"
+#include "typedef.h"
+#include "list.h"
+#include "DeviceIO.h"
 
 #define DEVICE_LED		(PINNAME_RI)
 
@@ -39,15 +37,15 @@ typedef struct Device
     ST_UARTDCB *cfg; //device config msg
     u8_t (*callBack)(struct Device *dev);  //command end call back function
     ListHandler_t cmdList;  //device command tab
-}Device_t;  //锟借备锟斤拷锟斤拷锟结构锟斤拷
+}Device_t;  
 
 typedef struct DeviceCmd
 {
     u8_t  state; 
     u16_t waitTime;
-    Buffer_t ack;     //应锟斤拷指锟筋缓锟斤拷
-	Buffer_t cmd;    //锟斤拷锟斤拷指锟筋缓锟斤拷
-}DeviceCmd_t; //锟借备指锟斤拷峁癸拷锟�
+    Buffer_t ack;     
+	Buffer_t cmd;   
+}DeviceCmd_t; 
 
 extern ListHandler_t DeviceList;
 

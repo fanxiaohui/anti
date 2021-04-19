@@ -1,16 +1,14 @@
-/**********************    COPYRIGHT 2014-2100,  Eybond ************************ 
- * @File    : DeviceIO.c
- * @Author  : CGQ
- * @Date    : 2017-12-05
- * @Brief   : 
+/**********************    ************************ 
+
  ******************************************************************************/
+#include "fibo_opencpu.h"
 #include "DeviceIO.h"
-#include "ql_uart.h"
-#include "ql_timer.h"
+//#include "ql_uart.h"
+//#include "ql_timer.h"
 #include "memory.h"
-#include "appTask.h"
+//#include "appTask.h"
 #include "Device.h"
-#include "Debug.h"
+//#include "Debug.h"
 #include "r_stdlib.h"
 #include "log.h"
 
@@ -23,9 +21,35 @@ static Buffer_t rcveBuf;
 static void end(DeviceAck_e e);
 
 
-static void UARTCallBack(Enum_SerialPort port, Enum_UARTEventType msg, bool level, void* customizedPara);
+//static void UARTCallBack(Enum_SerialPort port, Enum_UARTEventType msg, bool level, void* customizedPara);
+void UARTIOCallBack(hal_uart_port_t uart_port, UINT8 *data, UINT16 len, void *arg);
 static void overtimeCallback(u32 timerId, void* param);
 
+
+/*******************************************************************************            
+* introduce:        
+* parameter:                       
+* return:                 
+* author:           Luee                                                    
+*******************************************************************************/
+void DevIO_halGPIO() {
+  fibo_gpio_mode_set(DEVICE_UART_TXD, 6);
+  fibo_gpio_cfg(DEVICE_UART_TXD, PINDIRECTION_OUT);
+  fibo_gpio_set(DEVICE_UART_TXD, PINLEVEL_HIGH);
+
+  fibo_gpio_mode_set(DEVICE_UART_RXD, 6);
+  fibo_gpio_cfg(DEVICE_UART_RXD, PINDIRECTION_IN);
+  fibo_gpio_set(DEVICE_UART_RXD, PINLEVEL_HIGH);
+
+  s32_t ret = fibo_hal_uart_deinit(DEVICE_IO_PORT);
+  if (ret < 0) {
+    APP_DEBUG("deinit DEVICE_IO_PORT error!! ret:%ld\r\n", ret);
+  }
+}
+
+
+
+////////////////////////////////////////////
 /*******************************************************************************
   * @brief  
   * @note   None

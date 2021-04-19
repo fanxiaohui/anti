@@ -35,6 +35,15 @@ project(core C CXX ASM)
 
 include_directories(components/include components/newlib/include)
 include_directories(user/Lib)
+include_directories(user/device)
+include_directories(user/devuce/Manufactor)
+include_directories(user/fota)
+include_directories(user/net)
+include_directories(user/public)
+include_directories(user/server)
+include_directories(user/server/CommonServer)
+include_directories(user/server/eybond)
+include_directories(user/server/StatcGrid)
 
 function(cpp_only target file)
     add_library(${target} OBJECT ${file})
@@ -123,9 +132,12 @@ set(CUSTOMER_ID 000)
     ADD_DEFINITIONS(-DBUILDINFO=\"${_BUILDINFO_}\")
     file(GLOB MAIN_FILES user/main/*.c) 
     file(GLOB LIB_FILES user/Lib/*.c)
+    file(GLOB DEVICE_FILES user/device/*.c)
+    file(GLOB MANUFACTOR_FILES user/device/manufactor/*.c)
     add_appimg(${target} ${flash_ldscript}
     ${MAIN_FILES}
     ${LIB_FILES}
+    user/public/Debug.c
     )   
 
     target_link_libraries(${target} PRIVATE ${libc_file_name} ${libm_file_name} ${libgcc_file_name})

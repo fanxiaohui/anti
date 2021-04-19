@@ -16,6 +16,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
+#include "Debug.h"
 
 extern void test_printf(void);
 
@@ -34,9 +35,10 @@ static void prvThreadEntry(void *param)
     OSI_LOGI(0, "application thread enter, param 0x%x", param);
     //srand(100);
 
-    for (int n = 0; n < 10; n++)
+    for (int n = 0; n < 80; n++)
     {
         OSI_LOGI(0, "hello world %d", n);
+        APP_DEBUG("Luee test %d\r\n",n);
         fibo_taskSleep(1000);
     }
 
@@ -56,6 +58,7 @@ void * appimg_enter(void *param)
     OSI_LOGI(0, "application image enter, param 0x%x", param);
 
     prvInvokeGlobalCtors();
+    Debug_init();
 
     fibo_thread_create(prvThreadEntry, "mythread", 1024*4, NULL, OSI_PRIORITY_NORMAL);
     return 0;

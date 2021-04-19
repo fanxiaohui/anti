@@ -1,9 +1,9 @@
-/**************Copyright(C)闁跨喐鏋婚幏锟�2015-2026闁跨喐鏋婚幏绋磆enzhen Eybond Co., Ltd.***************
-  *@brief   : Device.c 闁跨喎鈧喎顦柨鐔告灮閹风兘鏁撻幑椋庢閹风兘鏁撻弬銈嗗闁跨噦鎷�
-  *@notes   : 2017.12.05 CGQ 闁跨喐鏋婚幏鐑芥晸閺傘倖瀚�   
+/**************Copyright(C)闂佽法鍠愰弸濠氬箯閿燂拷2015-2026闂佽法鍠愰弸濠氬箯缁嬬enzhen Eybond Co., Ltd.***************
+  *@brief   : Device.c 闂佽法鍠庨埀顒傚枎椤︻剟鏌ㄩ悢鍛婄伄闁归鍏橀弫鎾诲箲妞嬪孩顏熼柟椋庡厴閺佹捇寮妶鍡楊伓闂佽法鍣﹂幏锟�
+  *@notes   : 2017.12.05 CGQ 闂佽法鍠愰弸濠氬箯閻戣姤鏅搁柡鍌樺€栫€氾拷   
 *******************************************************************************/
 #include "Device.h"
-#include "List.h"
+#include "list.h"
 #include "DeviceIO.h"
 #include "appTask.h"
 #include "ql_system.h"
@@ -28,10 +28,10 @@
 #define DEVICE_UNLOCK   (0x00)
 
 
-ListHandler_t DeviceList;  //闁跨喎鈧喎顦柨鐔告灮閹风兘鏁撻弬銈嗗闁跨喐鏋婚幏鐑芥晸閺傘倖瀚�
+ListHandler_t DeviceList;  //闂佽法鍠庨埀顒傚枎椤︻剟鏌ㄩ悢鍛婄伄闁归鍏橀弫鎾诲棘閵堝棗顏堕梺璺ㄥ枑閺嬪骞忛悜鑺ユ櫢闁哄倶鍊栫€氾拷
 
-static DeviceCmd_t *currentCmd;     //闁跨喐鏋婚幏宄板闁跨喎鈧喎顦幐鍥晸閺傘倖瀚�
-static u8_t currentStep;            //闁跨喐鏋婚幏鐑芥晸閸欘偉顕滈幏鐑芥晸閺傘倖瀚�
+static DeviceCmd_t *currentCmd;     //闂佽法鍠愰弸濠氬箯瀹勬澘顤呴梺璺ㄥ枎閳ь剛鍠庨ˇ顒勫箰閸ヮ剚鏅搁柡鍌樺€栫€氾拷
+static u8_t currentStep;            //闂佽法鍠愰弸濠氬箯閻戣姤鏅搁柛娆樺亯椤曟粓骞忛悜鑺ユ櫢闁哄倶鍊栫€氾拷
 static u16_t DeviceOvertime;		//device overtime cnt
 static int watiTime;
 
@@ -257,7 +257,7 @@ static u8_t device_cmp(void *src, void *dest)
 static void deviceCmdSend(void)
 {
 	static DeviceInfo_t deviceInfo;
-	static Device_t *currentDevice;     //闁跨喐鏋婚幏宄板闁跨喎鈧喎顦�
+	static Device_t *currentDevice;     //闂佽法鍠愰弸濠氬箯瀹勬澘顤呴梺璺ㄥ枎閳ь剛鍠庨ˇ锟�
 	
     switch (currentStep)
     {
@@ -306,7 +306,7 @@ static void deviceCmdSend(void)
 			}
 			else
 			{
-				currentStep  = 3; //閻犱焦鍎抽ˇ顒勫极閻楀牆绁﹂柛鎰У椤愬ジ寮寸€涙ɑ鐓€闁挎稑鑻·鍐疀椤愶絾娈堕柟璇″枙缁楀倻鐥崸妞诲亾閻斿嘲顔� CGQ 2019.04.30
+				currentStep  = 3; //闁荤姳鐒﹂崕鎶剿囬鍕瀬闁绘鐗嗙粊锕傛煕閹邦剛校妞ゆ劕銈稿瀵糕偓娑櫳戦悡鈧梺鎸庣☉閼活垶路閸愵厾鐤€妞ゆ劧绲惧▓鍫曟煙鐠団€虫灆缂佹鍊婚惀顏堝锤濡炶浜鹃柣鏂垮槻椤旓拷 CGQ 2019.04.30
 			}
 						
             break;

@@ -8,7 +8,8 @@
 #define __DEVICE_IO_
 
 #include "typedef.h"
-#include "ql_uart.h"
+#include "oc_uart.h"
+#include "UARTConfig.h"
 
 #define DEVICE_IO_PORT		(UART_PORT1)
 #define DEVICE_OVERTIME_ID	(TIMER_ID_USER_START + 2)

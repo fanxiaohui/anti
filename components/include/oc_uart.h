@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include "fibo_opencpu_comm.h"
 #ifdef CONFIG_FIBOCOM_MAX_APP
 #include "fibo_opencpu_comm.h"
 #endif

@@ -1,5 +1,4 @@
 /***************************Copyright QYKJ   2015-06-18*************************
-//
 *******************************************************************************/    
 #ifndef __TYPEDEF_H
 #define __TYPEDEF_H
@@ -14,7 +13,7 @@
 #define mcu_t				u32_t		
 
 #define MAX(a, b)			((a) > (b) ? (a) : (b))
-#define MIN(a, b)			((a) > (b) ? (b) : (a))
+//#define MIN(a, b)			((a) > (b) ? (b) : (a))
 #define ABS(a, b)			(((a) > (b)) ? ((a) - (b)) : ((b) - (a)))
 
 #define SIZE(n)             (sizeof(n)/sizeof(n[0]))

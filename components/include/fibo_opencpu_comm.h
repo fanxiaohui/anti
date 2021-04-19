@@ -177,13 +177,14 @@ struct FIBO_CALLBACK_S
         __a > __b ? __b : __a; \
     })
 #endif
+/*
 #define MAX(a, b)              \
     ({                         \
         typeof(a) __a = (a);   \
         typeof(b) __b = (b);   \
         __a > __b ? __a : __b; \
     })
-
+*/
 typedef enum fibo_result_s fibo_result_t;
 
 enum fibo_result_s

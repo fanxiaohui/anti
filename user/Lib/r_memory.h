@@ -13,12 +13,9 @@
 
 #include "typedef.h"
 
-
 void memory_init(void *memAddr, mcu_t memSize);
 void *memory_apply(mcu_t size);
 void memory_release(void *addr);
-
-void memory_trans(void_fun_u8p_u16 fun);
 
 
 #endif//Memory.h end

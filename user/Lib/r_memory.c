@@ -14,7 +14,12 @@
                 内存释放增加地址边界对齐判断，某些设备内存非对齐访问时会导致硬件异常。
  * ****************************************************************************/
 #include "memory.h"
+#include "fibo_opencpu.h"
+#include "typedef.h"
 
+
+
+/*
 #define MEMORY_FLAG		(0xA55A55AA)//((void*)0x4885A112)
 #define MEMORY_ALIGNMENT (4)                //内存最小边界对齐
    
@@ -26,7 +31,7 @@ typedef struct memArea
 
 static MemArea_t *mem;
 
-
+*/
 /*******************************************************************************
  * ＊ 函数名：	memory_init
  * ＊ 描述	：	内存申请分配空间初始化
@@ -35,13 +40,14 @@ static MemArea_t *mem;
  * ＊ 返回	：	无
  * ＊ 注意	：	无
  * ****************************************************************************/
+/*
 void memory_init(void *memAddr, mcu_t memSize)
 {
 	mem = (MemArea_t*)memAddr;
 	mem->areaSize = memSize;
 	mem->nextArea = null;
 }
-
+*/
 /*******************************************************************************
  * ＊ 函数名：	memory_apply
  * ＊ 描述	：	内存申请
@@ -50,10 +56,14 @@ void memory_init(void *memAddr, mcu_t memSize)
  * ****************************************************************************/
 void *memory_apply(mcu_t size)
 {
+    return fibo_malloc(size);
+}
+/*
+{
     MemArea_t *tail, *pion;
     void *memAddr;
 
-    /*字节对齐*/
+    //字节对齐
     size += sizeof(MemArea_t) + (MEMORY_ALIGNMENT - 1);
     size &= ~(MEMORY_ALIGNMENT - 1);
     
@@ -84,6 +94,7 @@ void *memory_apply(mcu_t size)
 
 	return null;
 }
+*/
 /*******************************************************************************
  * ＊ 函数名：	memory_release
  * ＊ 描述	：	内存释放
@@ -92,6 +103,13 @@ void *memory_apply(mcu_t size)
  * ****************************************************************************/
 void memory_release(void *addr)
 {
+    if (addr != NULL) {
+    fibo_free(addr);
+  }
+}
+
+/*
+{
     if (null != addr && (((int)addr &(MEMORY_ALIGNMENT - 1)) == 0))
     {
         MemArea_t *tail, *pion;
@@ -99,7 +117,7 @@ void memory_release(void *addr)
         
         if ((void*)(rlsArea->areaSize^MEMORY_FLAG) == rlsArea->nextArea)
         {
-            /*找到插入节点*/
+            //找到插入节点
             for (pion = (MemArea_t*)&mem, tail = mem; (tail < rlsArea)&& (tail != null); 
                             pion = tail, tail = tail->nextArea)
             {}	
@@ -125,6 +143,7 @@ void memory_release(void *addr)
         }
     }
 }
-	
+
+*/	
 /******************************************************************************/
 

@@ -8,7 +8,7 @@
  * ＊ 修改	：	暂无
  * ****************************************************************************/
 #include "list.h"
-#include "memory.h"
+#include "r_memory.h"
 
 
 #define LIST_APPLY_FLAG			(0x55aa33cc)
