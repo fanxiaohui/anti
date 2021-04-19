@@ -34,6 +34,7 @@ set(BUILD_SHARED_LIBS OFF)
 project(core C CXX ASM)
 
 include_directories(components/include components/newlib/include)
+include_directories(user/Lib)
 
 function(cpp_only target file)
     add_library(${target} OBJECT ${file})
@@ -121,8 +122,10 @@ set(CUSTOMER_ID 000)
     ADD_DEFINITIONS(-DCUSTOMER=\"${CUSTOMER_ID}\")
     ADD_DEFINITIONS(-DBUILDINFO=\"${_BUILDINFO_}\")
     file(GLOB MAIN_FILES user/main/*.c) 
+    file(GLOB LIB_FILES user/Lib/*.c)
     add_appimg(${target} ${flash_ldscript}
     ${MAIN_FILES}
+    ${LIB_FILES}
     )   
 
     target_link_libraries(${target} PRIVATE ${libc_file_name} ${libm_file_name} ${libgcc_file_name})
