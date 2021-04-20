@@ -4,15 +4,18 @@
  * @Date    : 2017-12-01
  * @Brief   : 
  ******************************************************************************/
-#include "Debug.h"
+//sdk
+#include <stdio.h>
+#include <fibo_opencpu.h>
+
+//lib
 #include "r_memory.h"
 #include "typedef.h"
+#include "r_stdlib.h"
+//app
+#include "Debug.h"
 #include "utility.h"
 
-#include "stdio.h"
-#include "r_stdlib.h"
-//#include "string.h"
-#include "fibo_opencpu.h"
 
 #ifdef  EYBOND_DEBUG_ENABLE
 Buffer_t UARTDEBUG_buf;
