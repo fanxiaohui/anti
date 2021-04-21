@@ -42,7 +42,7 @@ void UARTDEBUG_CallBack(hal_uart_port_t uart_port, UINT8 *data, UINT16 len, void
       }
       UARTDEBUG_buf.payload = memory_apply(SERIAL_RX_BUFFER_LEN);
       if (UARTDEBUG_buf.payload == NULL) {
-        APP_DEBUG("memory alloc Fail\r\n");
+        //APP_DEBUG("memory alloc Fail\r\n");
         return;
       }
       UARTDEBUG_buf.size = SERIAL_RX_BUFFER_LEN;
