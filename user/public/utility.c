@@ -1,38 +1,23 @@
-/*****************************************************************************
-*  Copyright Statement:
-*  --------------------
-*  This software is protected by Copyright and the information contained
-*  herein is confidential. The software may not be copied and the information
-*  contained herein may not be used or disclosed except with the written
-*  permission of Quectel Co., Ltd. 2013
-*
-*****************************************************************************/
-/*****************************************************************************
- *
- * Filename:
- * ---------
- *   utility.c 
- *
- * Project:
- * --------
- *   OpenCPU
- *
- * Description:
- * ------------
- *   The APIs are used to parse string.
- *
- * Author:
- * -------
- * -------
- *
- *============================================================================
- *             HISTORY
- *----------------------------------------------------------------------------
- * 
- ****************************************************************************/
+/******************************************************************************           
+* name:                  
+* introduce:        
+* author:           Luee                                     
+******************************************************************************/ 
 
-#include "ql_stdlib.h"
-#include "ql_trace.h"
+//#include "ql_stdlib.h"
+//#include "ql_trace.h"
+
+//sdk
+#include <fibo_opencpu.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+//lib
+#include "r_stdlib.h"
+//app
+#include "utility.h"
+
+/*
 
 //check Symbol completeness
 static bool Check_Separator(char* pCfgStr)
@@ -68,7 +53,7 @@ static bool Check_Separator(char* pCfgStr)
     }
     return TRUE;
 }
-
+*/
 /*****************************************************************************
 * Function:     Analyse_Command
 *
@@ -88,6 +73,7 @@ static bool Check_Separator(char* pCfgStr)
 * Return:
 *               None
 *****************************************************************************/
+/*
 s32 Analyse_Command(u8* src_str,s32 symbol_num,u8 symbol, u8* dest_buf)
 {
     s32 i = 0;
@@ -143,5 +129,17 @@ s32 Analyse_Command(u8* src_str,s32 symbol_num,u8 symbol, u8* dest_buf)
 
     return result;
 }
+*/
+s32_t Ql_OS_SendMessage(s32_t destTaskId, u32_t msgId, u32_t param1, u32_t param2, u32_t param3) {
+  ST_MSG msg;
+  u32_t overtime=0;
+  r_memset(&msg, 0, sizeof(ST_MSG));
+  msg.message = msgId;
+  msg.param1 = param1;
+  msg.param2 = param2;
 
-
+  overtime=param3;
+  if(param3==0)
+    overtime=3000;
+  return fibo_queue_put(destTaskId, &msg, overtime);    //Luee 
+}

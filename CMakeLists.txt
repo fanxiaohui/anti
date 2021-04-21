@@ -138,6 +138,8 @@ set(CUSTOMER_ID 000)
     ${MAIN_FILES}
     ${LIB_FILES}
     user/public/Debug.c
+    user/public/hard_watchdog.c
+    user/public/utility.c
     )   
 
     target_link_libraries(${target} PRIVATE ${libc_file_name} ${libm_file_name} ${libgcc_file_name})

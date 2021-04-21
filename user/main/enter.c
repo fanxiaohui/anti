@@ -12,6 +12,8 @@
 
 //app
 #include "Debug.h"
+#include "hard_watchdog.h"
+#include "appTask.h"
 
 static void prvInvokeGlobalCtors(void);
 
@@ -26,11 +28,14 @@ static void prvThreadEntry(void *param)
     OSI_LOGI(0, "application thread enter, param 0x%x", param);
     //srand(100);
 
-    for (int n = 0; n < 80; n++)
+    while(1){
+    for (int n = 0; n < 10; n++)
     {
         OSI_LOGI(0, "hello world %d", n);
         APP_DEBUG("Luee test by debug print %d\r\n",n);
-        fibo_taskSleep(1000);
+        fibo_taskSleep(500);
+        Watchdog_feed();
+        fibo_watchdog_feed();
     }
 
     char *pt = (char *)fibo_malloc(512);
@@ -38,6 +43,7 @@ static void prvThreadEntry(void *param)
     {
         OSI_LOGI(0, "malloc address %u", (unsigned int)pt);
         fibo_free(pt);
+    }
     }
 
 	//test_printf();
@@ -51,6 +57,17 @@ static void prvThreadEntry(void *param)
 * author:           Luee                                                    
 *******************************************************************************/
 void * appimg_enter(void *param) {
+  UINT32 net_thread_id = 0;
+  UINT32 app_thread_id = 0;
+  UINT32 dev_thread_id = 0;
+  UINT32 eyb_thread_id = 0;
+  UINT32 ali_thread_id = 0;
+  UINT32 fota_thread_id = 0;
+  UINT32 upd_thread_id = 0;
+  UINT32 com_thread_id = 0;
+  UINT32 anti_thread_id=0;
+
+
   OSI_LOGI(0, "application image enter");
   prvInvokeGlobalCtors();
 
@@ -89,7 +106,9 @@ void * appimg_enter(void *param) {
   software_version   = fibo_get_sw_verno();  // 获取当前的软件版本(客户定制)
   APP_PRINT("hardware_version %s\r\n",hardware_version);
   APP_PRINT("SDK version %s\r\n",software_version);
-  INT32 enret = fibo_watchdog_enable(60);  // 60秒=1分钟 无任何语句执行则重启      
+  fibo_setSleepMode(0);   // Disable sleep mode.  
+
+  INT32 enret = fibo_watchdog_enable(30);  // 60秒=1分钟 无任何语句执行则重启  
   if(0 == enret) {
     APP_DEBUG("ninside watchdog enable success\r\n"); 
   }
@@ -97,8 +116,16 @@ void * appimg_enter(void *param) {
     APP_DEBUG("ninside watchdog enable fail\r\n"); 
   }
 
-    fibo_thread_create(prvThreadEntry, "mythread", 1024*4, NULL, OSI_PRIORITY_NORMAL);
-    return 0;
+
+  //fibo_watchdog_disable();
+
+  Watchdog_init();
+
+  fibo_thread_create(prvThreadEntry, "mythread", 1024*4, NULL, OSI_PRIORITY_NORMAL);
+  //fibo_thread_create_ex(proc_app_task,          "Eybond APP TASK",     1024*8*2, NULL, OSI_PRIORITY_REALTIME, &app_thread_id);
+
+
+  return 0;
 
 }
 
