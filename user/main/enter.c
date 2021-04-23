@@ -23,7 +23,7 @@ typedef enum
 	GATT_CONNECT,
 }GATT_CONNECT_STAT;
 
-/*
+
 static void prvInvokeGlobalCtors(void)
 {
     extern void (*__init_array_start[])();
@@ -33,8 +33,268 @@ static void prvInvokeGlobalCtors(void)
     for (size_t i = 0; i < count; ++i)
         __init_array_start[i]();
 }
-*/
 
+
+static gatt_chara_def_short_t wifi_mgr_chara = {{
+	ATT_CHARA_PROP_READ | ATT_CHARA_PROP_WRITE,
+	0,
+	0,
+	0x2a06&0xff,
+	0x2a06>>8
+}};
+static gatt_chara_def_short_t wifi_mgr_chara1 = {{
+	ATT_CHARA_PROP_READ | ATT_CHARA_PROP_NOTIFY,
+	0,
+	0,
+	0x2a00&0xff,
+	0x2a00>>8
+}};
+
+
+static gatt_chara_def_short_t wifi_mgr_chara2 = {{
+	ATT_CHARA_PROP_READ | ATT_CHARA_PROP_WRITE,
+	0,
+	0,
+	0x2906&0xff,
+	0x2906>>8
+}};
+
+
+char wifimgr_value[512] = "ijklmnopqrstuvwxyz1234567890123456789012345678901234567890abcdefghijklmnopqrstu";
+char wifimgr_ccc_cfg[100] = {0};
+char device_name[100] = "8910_ble";
+char notify_test[100] = "notify_test";
+
+uint8_t test_service[2] = {0x1811&0xff, 0x1811 >> 8};
+uint8_t add_service[2] = {0x180d&0xff, 0x180d >> 8};
+
+UINT16 acl_handle = 0;
+UINT8 gatt_connect_status = GATT_DISCONNECT;
+
+static UINT32 g_fibo_ble_queue = 0; 
+
+
+char temp_data[512] ={0};
+int test_data[8000] = {0};
+
+UINT8 data_write_callback(void *param)
+{
+	//UINT8 datalen = 0;
+	OSI_PRINTFI("[AUTO_BLE][%s:%d]wifimgr_value=%s", __FUNCTION__, __LINE__,wifimgr_value);
+	memset(wifimgr_value,0,512);
+	memcpy(wifimgr_value,"abcd123456",10);
+	
+	test_data[7999]= 1;
+	
+	OSI_PRINTFI("[AUTO_BLE][%s:%d] current thread ID = 0x%x", __FUNCTION__, __LINE__,fibo_thread_id());
+	
+    if(param != NULL)
+    {
+		gatt_srv_write_notify_t *pAttr = (gatt_srv_write_notify_t *)param;
+		OSI_PRINTFI("[AUTO_BLE][%s:%d]pAttr->->valueLen = %d,test_data[7999] = %d", __FUNCTION__, __LINE__,pAttr->valueLen,test_data[7999]);
+		int test = 1;
+		fibo_queue_put(g_fibo_ble_queue, (void *)&test, 0);	
+
+		fibo_taskSleep(1000);
+		test = 2;
+		fibo_queue_put(g_fibo_ble_queue, (void *)&test, 0);	
+	}
+
+	return 0;
+	
+}
+
+UINT8 read_notify_callback(void *param)
+{
+	OSI_PRINTFI("[AUTO_BLE][%s:%d]device_name=%s", __FUNCTION__, __LINE__,device_name);
+  
+	return 0;
+	
+}
+
+
+
+UINT8 wifi_changed_cb(void *param)
+{
+	OSI_PRINTFI("[AUTO_BLE][%s:%d] param = %p,wifimgr_value=%s", __FUNCTION__, __LINE__,param,wifimgr_value);
+	gatt_le_data_info_t notify;
+	notify.att_handle = wifi_mgr_chara1.value[2] << 8 | wifi_mgr_chara1.value[1];
+	memcpy((char *)&device_name[0],"notify_test",strlen((char *)"notify_test"));
+	OSI_PRINTFI("[AUTO_BLE][%s:%d] device_name = %s", __FUNCTION__, __LINE__,param,device_name);
+	notify.length = sizeof(device_name);
+	notify.data = (UINT8 *)&(device_name)[0];
+	notify.acl_handle = acl_handle;
+	return 0;
+}
+UINT8 wifimgr_value_write_cb(void *param)
+{
+    OSI_PRINTFI("[AUTO_BLE][%s:%d] param = %p,wifimgr_value=%s", __FUNCTION__, __LINE__,param,wifimgr_value);
+	return 0;
+}
+
+UINT8 wifimgr_value_read_cb(void *param)
+{
+    if(param != NULL)
+    {
+		gatt_srv_write_notify_t *pAttr = (gatt_srv_write_notify_t *)param;
+		OSI_PRINTFI("[AUTO_BLE][%s:%d]pAttr->->valueLen = %d", __FUNCTION__, __LINE__,pAttr->valueLen);
+	}
+	memset(wifimgr_value,0,sizeof(wifimgr_value));
+	memcpy(wifimgr_value,"abcd123456",10);
+    OSI_PRINTFI("[AUTO_BLE][%s:%d] param = %p,wifimgr_value=%s", __FUNCTION__, __LINE__,param,wifimgr_value);
+	
+	OSI_PRINTFI("[AUTO_BLE][%s:%d] current thread ID = 0x%x", __FUNCTION__, __LINE__,fibo_thread_id());
+	return 0;
+}
+
+uint8_t fibo_send_notify(uint16_t datalen, uint8_t *data)
+{
+	memset(device_name,0,sizeof(device_name));
+	memcpy(device_name,data,datalen);
+	gatt_le_data_info_t notify;
+	notify.att_handle = wifi_mgr_chara1.value[2] << 8 | wifi_mgr_chara1.value[1];
+	notify.length = datalen;
+	notify.data = (UINT8 *)&device_name[0];
+	notify.acl_handle = acl_handle;//no effect ,one connect acl_handle
+	
+	fibo_ble_notify((gatt_le_data_info_t *)&notify,GATT_NOTIFICATION);
+	OSI_PRINTFI("[AUTO_BLE][%s:%d] %s,handle=%x", __FUNCTION__, __LINE__,data,notify.att_handle);
+	return 0;
+}
+
+uint8_t fibo_send_indicator(uint16_t datalen, uint8_t *data)
+{
+	memset(device_name,0,sizeof(device_name));
+	memcpy(device_name,data,datalen);
+	gatt_le_data_info_t notify;
+	notify.att_handle = wifi_mgr_chara1.value[2] << 8 | wifi_mgr_chara1.value[1];
+	notify.length = datalen;
+	notify.data = (UINT8 *)&device_name[0];
+	notify.acl_handle = acl_handle;//no effect ,one connect acl_handle
+	fibo_ble_notify((gatt_le_data_info_t *)&notify,GATT_INDICATION);
+	OSI_PRINTFI("[AUTO_BLE][%s:%d] %s,handle=%x", __FUNCTION__, __LINE__,data,notify.att_handle);
+	return 0;
+}
+
+
+
+#define BT_8910_TP_UUID 0xf3f4
+uint8_t bt_8910_tp_data_uuid[16]= {0xfb,0x35,0x9b,0x5f,0x80,0x00,0x00,0x80,0x00,0x10,0x00,0x00,BT_8910_TP_UUID&0xff, BT_8910_TP_UUID>>8,0x00,0x00};
+uint8_t bt_8910_tp_data_uuid1[16]= {0x16,0x14,0xDE,0x54,0xDA,0xF2,0xFF,0x3C,0xFB,0xDC,0xBA,0xC9,0x80, 0x54,0x1D,0x11};
+
+gatt_element_t config_wifi_service[]={
+
+	{
+		//creat service and fill UUID
+	    sizeof(test_service),
+	   	ATT_PM_READABLE,
+	    {ATT_UUID_PRIMARY},
+	    ATT_FMT_SHORT_UUID | ATT_FMT_GROUPED,
+	    //ATT_FMT_GROUPED,
+	    (void *)test_service,
+	    NULL,
+	    NULL
+	},
+	{
+		//creat chara and fill permission
+	    sizeof(wifi_mgr_chara),
+		ATT_PM_READABLE,
+	    {ATT_UUID_CHAR},
+	    ATT_FMT_SHORT_UUID | ATT_FMT_FIXED_LENGTH,
+	    (void *)&wifi_mgr_chara,
+	    NULL,//cb
+	    NULL//read callback
+	},
+	{
+	    sizeof(wifimgr_value),
+		ATT_PM_READABLE | ATT_PM_WRITEABLE,
+	    {0x2a06},
+	    ATT_FMT_SHORT_UUID | ATT_FMT_WRITE_NOTIFY | ATT_FMT_FIXED_LENGTH,
+	    (void *)wifimgr_value,
+	    data_write_callback,
+	    wifimgr_value_read_cb
+	},
+	{
+		//des
+	    sizeof(wifimgr_ccc_cfg),
+	    ATT_PM_READABLE | ATT_PM_WRITEABLE,
+	    {ATT_UUID_CLIENT},
+	    ATT_FMT_SHORT_UUID | ATT_FMT_WRITE_NOTIFY|ATT_FMT_FIXED_LENGTH,
+	    (void *)wifimgr_ccc_cfg,
+	    //wifi_changed_cb,
+	    NULL,
+	    NULL
+	},
+	{
+	    sizeof(wifi_mgr_chara1),
+		ATT_PM_READABLE,
+	    {ATT_UUID_CHAR},
+	    ATT_FMT_SHORT_UUID | ATT_FMT_FIXED_LENGTH,
+	    (void *)&wifi_mgr_chara1,
+	    NULL,
+	    NULL
+	},
+	{
+	    sizeof(device_name),
+		ATT_PM_READABLE,
+	    {0x2a00},
+	    ATT_FMT_SHORT_UUID | ATT_FMT_WRITE_NOTIFY | ATT_FMT_FIXED_LENGTH,
+	    (void *)device_name,
+	    NULL,
+	    NULL
+	},
+	{
+	    sizeof(wifimgr_ccc_cfg),
+	    ATT_PM_READABLE | ATT_PM_WRITEABLE,
+	    {ATT_UUID_CLIENT},
+	    ATT_FMT_SHORT_UUID | ATT_FMT_WRITE_NOTIFY|ATT_FMT_FIXED_LENGTH,
+	    (void *)wifimgr_ccc_cfg,
+	    //wifi_changed_cb,
+	    NULL,
+	    NULL
+	},
+	{
+		//creat service and fill UUID
+	    sizeof(add_service),
+	   	ATT_PM_READABLE,
+	    {ATT_UUID_PRIMARY},
+	    ATT_FMT_SHORT_UUID | ATT_FMT_GROUPED,
+	    (void *)add_service,
+	    NULL,
+	    NULL
+	},
+	{
+		//creat chara and fill permission
+	    sizeof(wifi_mgr_chara2),
+		ATT_PM_READABLE,
+	    {ATT_UUID_CHAR},
+	    ATT_FMT_SHORT_UUID | ATT_FMT_FIXED_LENGTH,
+	    (void *)&wifi_mgr_chara2,
+	    wifi_changed_cb,//cb
+	    wifimgr_value_read_cb//read callback
+	},
+	{
+		//fill chara value 
+	    sizeof(wifimgr_value),
+		ATT_PM_READABLE | ATT_PM_WRITEABLE,
+	    {0x2906},
+	    ATT_FMT_SHORT_UUID | ATT_FMT_WRITE_NOTIFY | ATT_FMT_FIXED_LENGTH,
+	    (void *)wifimgr_value,
+	    data_write_callback,
+	    NULL
+	},
+	{
+		//des
+	    sizeof(wifimgr_ccc_cfg),
+	    ATT_PM_READABLE | ATT_PM_WRITEABLE,
+	    {ATT_UUID_CLIENT},
+	    ATT_FMT_SHORT_UUID | ATT_FMT_WRITE_NOTIFY|ATT_FMT_FIXED_LENGTH,
+	    (void *)wifimgr_ccc_cfg,
+	    wifi_changed_cb,
+	    NULL
+	},
+
+};
 
 static void sig_res_callback(GAPP_SIGNAL_ID_T sig, va_list arg)
 {
@@ -89,6 +349,34 @@ static void sig_res_callback(GAPP_SIGNAL_ID_T sig, va_list arg)
 			OSI_PRINTFI("[AUTO_BLE][%s:%d]type=%d,state=%d", __FUNCTION__, __LINE__,type,state);				
 		}
 		break;
+		case GAPP_SIG_BT_ON_IND: 
+		{
+
+			OSI_PRINTFI("[AUTO_BLE][%s:%d]GAPP_SIG_BT_ON_IND", __FUNCTION__, __LINE__);	
+
+		}
+		break;
+		case GAPP_SIG_BLE_CONNECT_IND:
+		{
+			int connect_id = (int)va_arg(arg, int);
+			int state = (int)va_arg(arg, int);
+			UINT8 *addr = (UINT8 *)va_arg(arg, UINT8 *);
+			UINT8 reason = (UINT8 )va_arg(arg, int);
+			va_end(arg);
+			OSI_PRINTFI("[AUTO_BLE][%s:%d]type=%d,state=%d,%p,%d", __FUNCTION__, __LINE__,connect_id,state,addr,reason);
+			if(addr != NULL)
+			{
+				OSI_PRINTFI("[AUTO_BLE][%s:%d]type=%d,state=%d,%s,%d", __FUNCTION__, __LINE__,connect_id,state,addr,reason);
+			}
+
+            acl_handle = (int)(connect_id);
+			if(state == 0)
+			{
+				//fibo_ble_enable_dev(1); // open broadcast
+			}
+		}
+		break;
+
 		
 	    default:
 	    {
@@ -101,269 +389,171 @@ static void sig_res_callback(GAPP_SIGNAL_ID_T sig, va_list arg)
 static FIBO_CALLBACK_T user_callback = {
     .fibo_signal = sig_res_callback};
 
-static int AddrU8IntToStrings(char *_src, char *_des)
+
+static void fibo_mtu_exchange_result_cb(UINT16 handle, UINT16 mtu)
 {
-	sprintf(_des, "%02x%s%02x%s%02x%s%02x%s%02x%s%02x", _src[0], ":", _src[1], ":", _src[2], ":", _src[3], ":", _src[4], ":", _src[5]);
-	return 0;
+	OSI_PRINTFI("[AUTO_BLE][%s:%d] handle = %d,mtu = %d", __FUNCTION__, __LINE__,handle,mtu);
 }
 
-bt_status_t fibo_connection_state_change_cb(int conn_id, int connected, bdaddr_t *addr)
-{
-	OSI_PRINTFI("[AUTO_BLE][%s:%d]connected=%d,conn_id=%d", __FUNCTION__, __LINE__,connected,conn_id);
-	if(connected == 1)
-	{
-       fibo_taskSleep(600);
-       fibo_ble_client_discover_all_primary_service(28,conn_id);
-	}
-	if(connected == 0)
-	{
-         // maybe need scan again and connect again
-         fibo_ble_scan_enable(1);
-	}
-	return BT_SUCCESS;
-}
-bt_status_t fibo_discover_service_by_uuid_cb (void *parma)
-{
-   OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-   gatt_prime_service_t *gatt_prime_service = (gatt_prime_service_t *)parma;
-   char value[100]="00001000800000805f9b34fb";
-   fibo_ble_client_read_char_value_by_uuid(28, NULL, 0xffe3, gatt_prime_service->startHandle, gatt_prime_service->endHandle, 0);
-   OSI_PRINTFI("[AUTO_BLE][%s:%d]uuid=%x,%d", __FUNCTION__, __LINE__,gatt_prime_service->uuid, gatt_prime_service->charNum);
-   if(gatt_prime_service->pCharaList != NULL)
-   {
-	   fibo_ble_client_write_char_value(28, gatt_prime_service->pCharaList->handle, value, sizeof("00001000800000805f9b34fb"), 0);
-	   OSI_PRINTFI("[AUTO_BLE][%s:%d]uuid=%x", __FUNCTION__, __LINE__,gatt_prime_service->uuid);
-   }
-   return BT_SUCCESS;
-}
-bt_status_t fibo_discover_service_all_cb (void *parma)
-{
-   OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-   gatt_prime_service_t *gatt_prime_service = (gatt_prime_service_t *)parma;
-   OSI_PRINTFI("[AUTO_BLE][%s:%d]uuid=%x,%d", __FUNCTION__, __LINE__,gatt_prime_service->uuid,gatt_prime_service->charNum);
+static fibo_ble_btgatt_callback_t fibo_ble_btgatt_callback={
+	.client = NULL,
+	.server = NULL,
+	.mtu_exchange_result_cb = fibo_mtu_exchange_result_cb,
+};
 
-   if(gatt_prime_service->uuid == 0xffe3)
-   {
-	   fibo_ble_client_discover_all_characteristic(28,gatt_prime_service->startHandle,gatt_prime_service->endHandle,0);
 
-   }
-   OSI_PRINTFI("[AUTO_BLE][%s:%d]uuid=%x", __FUNCTION__, __LINE__,gatt_prime_service->uuid);
-   return BT_SUCCESS;
-}
-bt_status_t fibo_char_des_data (void *parma)
-{
-    OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-    att_server_t *att_server = (att_server_t *)parma;
-	uint8 test_val[2] = {0};
-	test_val[0]=0x01;
-	test_val[1]=0x00;
-	fibo_ble_client_write_char_value(28,14,test_val,2,0);
-    return BT_SUCCESS;
-}
-bt_status_t fibo_char_data (void *parma, UINT8 more_data)
-{
-    OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-    att_server_t *att_server = (att_server_t *)parma;
-    uint8 i = 0;
-    uint8 pair_len = att_server->lastRsp.payLoad[0];
-    uint8 properties;
-    uint8 test_val[100] = {0};
-    uint16 value_handle = 0;
-    OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-	uint8 test_value[2] = {0};
-     test_value[0]=0x01;
-	 test_value[1]=0x00;
 
-    fibo_ble_client_write_char_value(28,14,test_value,2,0);
-    while(i<(att_server->lastRsp.length-1)/pair_len)
-    {
-        OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-        properties = att_server->lastRsp.payLoad[i * pair_len +3];
-        value_handle = (att_server->lastRsp.payLoad[i * pair_len + 5] << 8)| att_server->lastRsp.payLoad[i * pair_len + 4];
-        OSI_PRINTFI("properties = %x", properties);
-        //0x04:write without response,0x10:notify,0x08:write,0x20:indicate,0x02:read,0x01:broadcast
-        #if 0
-        if(properties & 0x04)  //write with no response
-        {
-            OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-            test_val[0]= 0xEF;
-            test_val[1]= 0xFE;
-            test_val[2]= 0x00;
-            test_val[3]= 0x00;
-            test_val[4]= 0xC6;
-            test_val[5]= 0xC7;
-            fibo_ble_client_write_char_value_without_rsp(28,value_handle,test_val, 6,0);
+static void prvThreadEntry(void *param)
+{
+    OSI_LOGI(0, "application thread enter, param 0x%x", param);
+	UINT32 size;
+
+
+	OSI_PRINTFI("[AUTO_BLE][%s:%d] current thread ID = 0x%x", __FUNCTION__, __LINE__,fibo_thread_id());
+
+	fibo_bt_onoff(1);
+	//fibo_taskSleep(2000);
+    for (int n = 0; n < 2; n++){
+            OSI_LOGI(0, "hello world %d", n);
+            APP_DEBUG("Luee test by debug print %d\r\n",n);
+            fibo_taskSleep(500);
+            Watchdog_feed();
+            fibo_watchdog_feed();
         }
-        
-        if(properties & 0x08)  
-        {
-            OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-			uint8 test_value[2] = {0};
-		     test_value[0]=0x01;
-			 test_value[1]=0x00;
+	uint8 name_set[28] = {0};
+	memset(name_set,0,28);
+	memcpy(name_set,"8910_ble",sizeof("8910_ble"));
+	int ret = fibo_ble_set_read_name(0,name_set,0); // set ble name 
+    fibo_ble_client_server_int(&fibo_ble_btgatt_callback);
+	OSI_PRINTFI("[AUTO_BLE][%s:%d] ret = %d", __FUNCTION__, __LINE__,ret);
 
-            fibo_ble_client_write_char_value(28,14,test_value,2,0);
-        }
-        #endif
-		 if(properties & 0x10)
-		 {
-             //test_val[0]= 0x01;
-			 fibo_ble_client_get_char_descriptor(28,14,14,0);
-		 }
-        i++;
-        OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-    }
-    return BT_SUCCESS;
-}
-bt_status_t fibo_read_cb (void *parma)
-{
-   OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-   att_server_t *att_server = (att_server_t *)parma;
-   return BT_SUCCESS;
-}
-bt_status_t fibo_read_blob_cb (void *parma)
-{
-   OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-   att_server_t *att_server = (att_server_t *)parma;
-   return BT_SUCCESS;
-}
-bt_status_t fibo_read_multi_cb (void *parma)
-{
-   OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-   att_server_t *att_server = (att_server_t *)parma;
-   return BT_SUCCESS;
-}
-bt_status_t fibo_recv_notification_cb (void *parma)
-{
-    OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-	att_server_t *att_server = (att_server_t *)parma;
-	OSI_PRINTFI("[AUTO_BLE][%s:%d]%d,%s", __FUNCTION__, __LINE__,att_server->lastReqPdu.attValuelen,att_server->lastReqPdu.attValue);
-	OSI_PRINTFI("[AUTO_BLE][%s:%d]%d,%s", __FUNCTION__, __LINE__,att_server->lastNoti.length,&att_server->lastNoti.payLoad[2]);
-	for(int i =0;i<att_server->lastNoti.length;i++)
-	{
-		OSI_PRINTFI("[AUTO_BLE][%s:%d]%d,%x", __FUNCTION__, __LINE__,att_server->lastNoti.length,att_server->lastNoti.payLoad[i]);
-	}
 	
-	return BT_SUCCESS;
-}
-bt_status_t fibo_recv_indication_cb (void *parma)
-{
-    OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-	att_server_t *att_server = (att_server_t *)parma;
-	OSI_PRINTFI("[AUTO_BLE][%s:%d]%d,%s", __FUNCTION__, __LINE__,att_server->lastReqPdu.attValuelen,att_server->lastReqPdu.attValue);
-	OSI_PRINTFI("[AUTO_BLE][%s:%d]%d,%s", __FUNCTION__, __LINE__,att_server->lastNoti.length,&att_server->lastNoti.payLoad[2]);
-	for(int i =0;i<att_server->lastNoti.length;i++)
+	//fibo_taskSleep(2000);
+    for (int n = 0; n < 2; n++){
+            OSI_LOGI(0, "hello world %d", n);
+            APP_DEBUG("Luee test by debug print %d\r\n",n);
+            fibo_taskSleep(500);
+            Watchdog_feed();
+            fibo_watchdog_feed();
+        }
+
+	char addr[18] = {0};
+	
+	uint8_t name[41] = {0};
+	fibo_ble_set_read_name(1,name,0);
+	OSI_PRINTFI("[AUTO_BLE][%s:%d] name = %s", __FUNCTION__, __LINE__,name);
+	
+	size = sizeof(config_wifi_service)/sizeof(gatt_element_t);
+	OSI_PRINTFI("[AUTO_BLE][%s:%d] size = %d", __FUNCTION__, __LINE__,size);
+	fibo_ble_add_service_and_characteristic(config_wifi_service,size); //create serive and characteristic
+	//fibo_taskSleep(2000);
+    for (int n = 0; n < 2; n++){
+            OSI_LOGI(0, "hello world %d", n);
+            APP_DEBUG("Luee test by debug print %d\r\n",n);
+            fibo_taskSleep(500);
+            Watchdog_feed();
+            fibo_watchdog_feed();
+        }
+
+
+	fibo_ble_enable_dev(1); // open broadcast
+
+	//fibo_taskSleep(2000);
+    for (int n = 0; n < 2; n++){
+            OSI_LOGI(0, "hello world %d", n);
+            APP_DEBUG("Luee test by debug print %d\r\n",n);
+            fibo_taskSleep(500);
+            Watchdog_feed();
+            fibo_watchdog_feed();
+        }
+#if 0
+	char adv_data[20]={0};
+	
+	fibo_ble_enable_dev(0); // close broadcast
+    memcpy(adv_data,"0303E7FE0DFF0102123456123456123456123456",36);
+	fibo_ble_set_dev_data(18,adv_data); // set broadcast data
+
+	fibo_ble_enable_dev(1); // open broadcast
+#endif
+
+#if 0
+
+    fibo_taskSleep(20000);
+	fibo_ble_enable_dev(0); // close broadcast
+    memcpy(adv_data,"050209010205",12);
+	fibo_ble_set_dev_data(6,adv_data); // set broadcast data
+
+	fibo_ble_enable_dev(1); // open broadcast
+
+
+
+	fibo_taskSleep(20000);
+	fibo_ble_enable_dev(0); // close broadcast
+    fibo_ble_set_dev_param(6,60,80,0,0,-1,7,0,NULL);
+	fibo_ble_enable_dev(1); // open broadcast
+#endif
+	while(1)
 	{
-		OSI_PRINTFI("[AUTO_BLE][%s:%d]%d,%x", __FUNCTION__, __LINE__,att_server->lastNoti.length,att_server->lastNoti.payLoad[i]);
+        OSI_LOGI(0, "hello world %d");
+        //fibo_taskSleep(10000);
+        for (int n = 0; n < 10; n++){
+            OSI_LOGI(0, "hello world %d", n);
+            APP_DEBUG("Luee test by debug print %d\r\n",n);
+            fibo_taskSleep(500);
+            Watchdog_feed();
+            fibo_watchdog_feed();
+        }
 	}
 
-	return BT_SUCCESS;
+	//test_printf();
+    fibo_thread_delete();
 }
 
-int write_enable = 0;
-bt_status_t fibo_write_cb (void *parma)
-{
-    OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-	att_req_pdu_t *att_req_pdu = (att_req_pdu_t *)parma;
-	write_enable =1;
-	#if 1
-	uint8 test_val[6] = {0};
-	OSI_PRINTFI("[AUTO_BLE][%s:%d]att_req_pdu->attValuelen=%d,att_req_pdu->attValue=%s", __FUNCTION__, __LINE__,att_req_pdu->attValuelen,att_req_pdu->attValue);
-	test_val[0]= 0xEF;
-	test_val[1]= 0xFE;
-	test_val[2]= 0x00;
-	test_val[3]= 0x00;
-	test_val[4]= 0xC6;
-	test_val[5]= 0xC7;
-	fibo_ble_client_write_char_value_without_rsp(28,16,test_val, 6,0);
-	#endif
 
-	return BT_SUCCESS;
-}
-bt_status_t fibo_write_rsp_cb (void *parma)
+static void fibo_ble_task(void *param)
 {
-     OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-	 UINT16 *aclHandle = (UINT16 *)parma;
-	 return BT_SUCCESS;
-}
-bt_status_t fibo_scan_cb (void *parma,UINT8 adv_len)
-{
-     //OSI_PRINTFI("[AUTO_BLE][%s:%d],adv_len=%d", __FUNCTION__, __LINE__,adv_len);
-	 st_scan_report_info *scan_report = (st_scan_report_info *)parma;
-	 OSI_PRINTFI("[AUTO_BLE][%s:%d] %s,addr_type:%d", __FUNCTION__, __LINE__,scan_report->name,scan_report->addr_type);
-
-	if(scan_report->name_length > 0)
+	while(1)
 	{
-	    
-		if(!strcasecmp("D0000031",scan_report->name))
+	    int value = 0;
+		fibo_queue_get(g_fibo_ble_queue, (void *)&value, 0);
+		switch(value)
 		{
-		    
-			//OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-			
-
-			if(scan_report->bdAddress.addr[0]==0 && scan_report->bdAddress.addr[1]==0 && scan_report->bdAddress.addr[2]==0 && scan_report->bdAddress.addr[3]==0 && scan_report->bdAddress.addr[4]==0 && scan_report->bdAddress.addr[5]==0)
-			{
-                //searching on going
-                OSI_PRINTFI("[AUTO_BLE][%s:%d] %s,addr_type:%d", __FUNCTION__, __LINE__,scan_report->name,scan_report->addr_type);
-				fibo_ble_scan_enable(1);
-			}
-			else
-			{
-			    fibo_ble_scan_enable(0);
-				//fibo_taskSleep(500);
-				char addr[30] = {0};
-				AddrU8IntToStrings(scan_report->bdAddress.addr,addr);
-				OSI_PRINTFI("[AUTO_BLE][%s:%d] %s,add=%s,addr_type:%d", __FUNCTION__, __LINE__,scan_report->name,addr,scan_report->addr_type);
-				fibo_ble_connect(1,scan_report->addr_type,addr);
-				
-
-			}
-			//fibo_taskSleep(500);
-
+           case 1: //send notification
+           fibo_send_notify(6,"notify");
+		   break;
+		   case 2: //send indicator
+		   fibo_send_indicator(strlen("inidicator"),"inidicator");
+		   break;
+		   default:
+		   	OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
+		   break;
 		}
 	}
-	 return BT_SUCCESS;
-}
-void fibo_smp_pair_success_cb (void)
-{
-     OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-	 return ;
-}
-void fibo_smp_pair_failed_cb(void)
-{
-     OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
-	 return ;
-}
-void fibo_att_error_cb (UINT8 error_code)
-{
-     OSI_PRINTFI("[AUTO_BLE][%s:%d]error_code=%d", __FUNCTION__, __LINE__,error_code);
-	 return ;
+	return;
+
 }
 
+void * appimg_enter(void *param)
+{
+    OSI_LOGI(0, "application image enter, param 0x%x", param);
 
-btgatt_client_callbacks_t fibo_ble_client_callback={
-	.connection_state_change_cb = fibo_connection_state_change_cb,
-	.discover_service_by_uuid_cb = fibo_discover_service_by_uuid_cb,
-	.discover_service_all_cb = fibo_discover_service_all_cb,
-	.char_des_data = fibo_char_des_data,
-	.char_data = fibo_char_data,
-	.read_cb = fibo_read_cb,
-	.read_blob_cb = fibo_read_blob_cb,
-	.read_multi_cb = fibo_read_multi_cb,
-	.recv_notification_cb = fibo_recv_notification_cb,
-	.recv_indication_cb = fibo_recv_indication_cb,
-	.write_cb = fibo_write_cb,
-	.write_rsp_cb = fibo_write_rsp_cb,
-	.scan_cb = fibo_scan_cb,
-	.smp_pair_success_cb = fibo_smp_pair_success_cb,
-	.smp_pair_failed_cb = fibo_smp_pair_failed_cb,
-	.att_error_cb = fibo_att_error_cb,
-};
+    prvInvokeGlobalCtors();
 
-const btgatt_callback_t fibo_ble_btgatt_callback={
-	.client = &fibo_ble_client_callback,
-	.server = NULL,
-};
+	if(g_fibo_ble_queue == 0)
+    {
+		g_fibo_ble_queue = fibo_queue_create(20, sizeof(int));
+	}
+
+    fibo_thread_create(prvThreadEntry, "mythread", 1024*4, NULL, OSI_PRIORITY_NORMAL);
+	fibo_thread_create(fibo_ble_task, "fibo_ble_task", 1024*4, NULL, OSI_PRIORITY_NORMAL);
+    return (void *)&user_callback;
+}
+
+void appimg_exit(void)
+{
+    OSI_LOGI(0, "application image exit");
+}
+
 
 //============ble===============================================================
 
@@ -380,7 +570,7 @@ const btgatt_callback_t fibo_ble_btgatt_callback={
 
 
 
-static void prvInvokeGlobalCtors(void);
+//static void prvInvokeGlobalCtors(void);
 
 /*******************************************************************************            
 * introduce:        
@@ -388,8 +578,10 @@ static void prvInvokeGlobalCtors(void);
 * return:                 
 * author:           Luee                                                    
 *******************************************************************************/
+/*
 static void prvThreadEntry(void *param)
 {
+    UINT32 size;
     OSI_LOGI(0, "application thread enter, param 0x%x", param);
     //srand(100);
 
@@ -405,18 +597,78 @@ static void prvThreadEntry(void *param)
         fibo_watchdog_feed();
     }
 
+    //fibo_taskSleep(10000);
+
     fibo_bt_onoff(1);
 	fibo_taskSleep(2000);
-	fibo_ble_set_read_name(0,(uint8_t *)"8910_ble test",0); // set ble name 
-	//size = sizeof(config_wifi_service)/sizeof(gatt_element_t);
-	//fibo_ble_add_service_and_characteristic(config_wifi_service,size); //create serive and characteristic
+	//fibo_bt_onoff(0);
+	//fibo_taskSleep(2000);
+	//fibo_bt_onoff(1);
+	//fibo_taskSleep(2000);
+	fibo_ble_set_read_name(0,(uint8_t *)"8910_ble",0); // set ble name 
+	size = sizeof(config_wifi_service)/sizeof(gatt_element_t);
+	fibo_ble_add_service_and_characteristic(config_wifi_service,size); //create serive and characteristic
 	fibo_taskSleep(2000);
-
-	fibo_ble_client_int((void *)&fibo_ble_btgatt_callback);
 
 	fibo_ble_scan_enable(1);
 
 	//fibo_taskSleep(20000);
+    for (int n = 0; n < 20; n++)
+    {
+        OSI_LOGI(0, "hello world %d", n);
+        APP_DEBUG("Luee test by debug print %d\r\n",n);
+        fibo_taskSleep(500);
+        Watchdog_feed();
+        fibo_watchdog_feed();
+    }
+
+	fibo_ble_enable_dev(1); // open broadcast
+	//fibo_taskSleep(20000);
+    for (int n = 0; n < 20; n++)
+    {
+        OSI_LOGI(0, "hello world %d", n);
+        APP_DEBUG("Luee test by debug print %d\r\n",n);
+        fibo_taskSleep(500);
+        Watchdog_feed();
+        fibo_watchdog_feed();
+    }
+#if 0
+	fibo_send_notify(3,"abc");
+
+	fibo_taskSleep(20000);
+
+	fibo_send_notify(3,"WER");
+
+	fibo_taskSleep(20000);
+
+	fibo_ble_enable_dev(0); // close broadcast
+
+	fibo_taskSleep(2000);
+
+	char *adv_data = NULL;
+	adv_data = fibo_malloc(20);
+	memcpy(adv_data,"0406090102",10);
+
+	fibo_ble_set_dev_data(5,adv_data);
+
+	fibo_ble_enable_dev(1); // open broadcast
+
+
+
+    fibo_taskSleep(20000);
+	fibo_ble_enable_dev(0); // close broadcast
+    memcpy(adv_data,"050209010205",12);
+	fibo_ble_set_dev_data(6,adv_data); // set broadcast data
+
+	fibo_ble_enable_dev(1); // open broadcast
+
+
+
+	fibo_taskSleep(20000);
+	fibo_ble_enable_dev(0); // close broadcast
+    fibo_ble_set_dev_param(6,60,80,0,0,-1,7,0,NULL);
+	fibo_ble_enable_dev(1); // open broadcast
+#endif
 
     //ble
 
@@ -441,13 +693,14 @@ static void prvThreadEntry(void *param)
 	//test_printf();
     fibo_thread_delete();
 }
-
+*/
 /*******************************************************************************            
 * introduce:        
 * parameter:                       
 * return:                 
 * author:           Luee                                                    
 *******************************************************************************/
+/*
 void * appimg_enter(void *param) {
   UINT32 net_thread_id = 0;
   UINT32 app_thread_id = 0;
@@ -514,21 +767,19 @@ void * appimg_enter(void *param) {
   Watchdog_init();
 
   fibo_thread_create(prvThreadEntry, "mythread", 1024*4, NULL, OSI_PRIORITY_NORMAL);
-  //fibo_thread_create_ex(proc_app_task,          "Eybond APP TASK",     1024*8*2, NULL, OSI_PRIORITY_REALTIME, &app_thread_id);
-
-  //fibo_thread_create(prvThreadEntry, "mythread", 1024*4, NULL, OSI_PRIORITY_NORMAL);
-  return (void *)&user_callback;
+    return (void *)&user_callback;
 
   return 0;
 
 }
-
+*/
 /*******************************************************************************            
 * introduce:        
 * parameter:                       
 * return:                 
 * author:           Luee                                                    
 *******************************************************************************/
+/*
 static void prvInvokeGlobalCtors(void)
 {
     extern void (*__init_array_start[])();
@@ -538,6 +789,7 @@ static void prvInvokeGlobalCtors(void)
     for (size_t i = 0; i < count; ++i)
         __init_array_start[i]();
 }
+*/
 
 /*******************************************************************************            
 * introduce:        
@@ -545,7 +797,9 @@ static void prvInvokeGlobalCtors(void)
 * return:                 
 * author:           Luee                                                    
 *******************************************************************************/
+/*
 void appimg_exit(void)
 {
     OSI_LOGI(0, "application image exit");
 }
+*/
