@@ -1,29 +1,32 @@
-/******************************************************************************           
-* name:             enter.c        
-* introduce:        user app enter
-* author:           Luee                                     
-******************************************************************************/ 
-//sdk
-#include <fibo_opencpu.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-//lib
+/* Copyright (C) 2018 RDA Technologies Limited and/or its affiliates("RDA").
+ * All rights reserved.
+ *
+ * This software is supplied "AS IS" without any warranties.
+ * RDA assumes no responsibility or liability for the use of the software,
+ * conveys no license or title under any patent, copyright, or mask work
+ * right to the product. RDA reserves the right to make changes in the
+ * software without notification.  RDA also make no representation or
+ * warranty that such application will be suitable for the specified use
+ * without further testing or modification.
+ */
 
-//app
-#include "Debug.h"
-#include "hard_watchdog.h"
-#include "appTask.h"
+#define OSI_LOG_TAG OSI_MAKE_LOG_TAG('D', 'B', 'L', 'E')
 
+#include "fibo_opencpu.h"
+#include "stdio.h"
+#include "stdlib.h"
+#include "string.h"
+#include "bt_abs.h"
 
-//===========ble================================================================
+//extern void test_printf(void);
+
 typedef enum
 {
 	GATT_DISCONNECT = 0x00,
 	GATT_CONNECT,
 }GATT_CONNECT_STAT;
 
-/*
+
 static void prvInvokeGlobalCtors(void)
 {
     extern void (*__init_array_start[])();
@@ -33,7 +36,7 @@ static void prvInvokeGlobalCtors(void)
     for (size_t i = 0; i < count; ++i)
         __init_array_start[i]();
 }
-*/
+
 
 
 static void sig_res_callback(GAPP_SIGNAL_ID_T sig, va_list arg)
@@ -98,7 +101,7 @@ static void sig_res_callback(GAPP_SIGNAL_ID_T sig, va_list arg)
     OSI_LOGI(0, "test");
 }
 
-static FIBO_CALLBACK_T user_callback = {
+FIBO_CALLBACK_T ble_user_callback = {
     .fibo_signal = sig_res_callback};
 
 static int AddrU8IntToStrings(char *_src, char *_des)
@@ -365,49 +368,17 @@ const btgatt_callback_t fibo_ble_btgatt_callback={
 	.server = NULL,
 };
 
-//============ble===============================================================
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-static void prvInvokeGlobalCtors(void);
-
-/*******************************************************************************            
-* introduce:        
-* parameter:                       
-* return:                 
-* author:           Luee                                                    
-*******************************************************************************/
+/*
 static void prvThreadEntry(void *param)
 {
     OSI_LOGI(0, "application thread enter, param 0x%x", param);
-    //srand(100);
 
-    //ble
-    //fibo_taskSleep(10000);
-
-    for (int n = 0; n < 10; n++)
-    {
-        OSI_LOGI(0, "hello world %d", n);
-        APP_DEBUG("Luee test by debug print %d\r\n",n);
-        fibo_taskSleep(500);
-        Watchdog_feed();
-        fibo_watchdog_feed();
-    }
+	fibo_taskSleep(10000);
 
     fibo_bt_onoff(1);
 	fibo_taskSleep(2000);
-	fibo_ble_set_read_name(0,(uint8_t *)"8910_ble test",0); // set ble name 
+	fibo_ble_set_read_name(0,(uint8_t *)"8910_ble",0); // set ble name 
 	//size = sizeof(config_wifi_service)/sizeof(gatt_element_t);
 	//fibo_ble_add_service_and_characteristic(config_wifi_service,size); //create serive and characteristic
 	fibo_taskSleep(2000);
@@ -416,136 +387,31 @@ static void prvThreadEntry(void *param)
 
 	fibo_ble_scan_enable(1);
 
-	//fibo_taskSleep(20000);
+	fibo_taskSleep(20000);
 
-    //ble
-
-    while(1){
-    for (int n = 0; n < 10; n++)
-    {
-        OSI_LOGI(0, "hello world %d", n);
-        APP_DEBUG("Luee test by debug print %d\r\n",n);
-        fibo_taskSleep(500);
-        Watchdog_feed();
-        fibo_watchdog_feed();
-    }
-
-    char *pt = (char *)fibo_malloc(512);
-    if (pt != NULL)
-    {
-        OSI_LOGI(0, "malloc address %u", (unsigned int)pt);
-        fibo_free(pt);
-    }
-    }
+	while(1)
+	{
+        OSI_LOGI(0, "hello world %d");
+        fibo_taskSleep(10000);
+	}
 
 	//test_printf();
     fibo_thread_delete();
 }
 
-/*******************************************************************************            
-* introduce:        
-* parameter:                       
-* return:                 
-* author:           Luee                                                    
-*******************************************************************************/
-void * appimg_enter(void *param) {
-  UINT32 net_thread_id = 0;
-  UINT32 app_thread_id = 0;
-  UINT32 dev_thread_id = 0;
-  UINT32 eyb_thread_id = 0;
-  UINT32 ali_thread_id = 0;
-  UINT32 fota_thread_id = 0;
-  UINT32 upd_thread_id = 0;
-  UINT32 com_thread_id = 0;
-  UINT32 anti_thread_id=0;
-
-
-  OSI_LOGI(0, "application image enter");
-  prvInvokeGlobalCtors();
-
-  Debug_init(); // 上电配置DEBUG串口
-  fibo_taskSleep(1000);
-
-  u8_t bootcase = fibo_getbootcause();
-  switch (bootcase) {
-    case 0:
-      APP_PRINT("Booting from Soft reboot!!\r\n");
-      break;
-    case 1:
-      APP_PRINT("Booting from RST reboot!!\r\n");
-      break;
-    case 2:
-      APP_PRINT("Booting from Power on!!\r\n");
-      break;
-    case 3:
-      APP_PRINT("Booting from USB plug!!\r\n");
-      break;
-    default:
-      APP_PRINT("Booting from unkonw mode!!\r\n");
-      break;
-  }
-
-  APP_PRINT("Version: %s\r\n", FWVERSION);
-  APP_PRINT("Time: %s\r\n", MAKE_TIME);
-  //fibo_set_app_version(FWVERSION);
-
-  INT8 *hardware_version = NULL;
-  INT8 *software_version = NULL;
-
-  fibo_at_send((UINT8 *)"AT+MSTART=0,0\r\n", r_strlen("AT+MSTART=0,0\r\n"));  // 关闭Start message notification
-
-  hardware_version   = fibo_get_hw_verno();  // 获取当前的硬件版本(客户定制)
-  software_version   = fibo_get_sw_verno();  // 获取当前的软件版本(客户定制)
-  APP_PRINT("hardware_version %s\r\n",hardware_version);
-  APP_PRINT("SDK version %s\r\n",software_version);
-  fibo_setSleepMode(0);   // Disable sleep mode.  
-
-  INT32 enret = fibo_watchdog_enable(30);  // 60秒=1分钟 无任何语句执行则重启  
-  if(0 == enret) {
-    APP_DEBUG("ninside watchdog enable success\r\n"); 
-  }
-  if(enret < 0) {
-    APP_DEBUG("ninside watchdog enable fail\r\n"); 
-  }
-
-
-  //fibo_watchdog_disable();
-
-  Watchdog_init();
-
-  fibo_thread_create(prvThreadEntry, "mythread", 1024*4, NULL, OSI_PRIORITY_NORMAL);
-  //fibo_thread_create_ex(proc_app_task,          "Eybond APP TASK",     1024*8*2, NULL, OSI_PRIORITY_REALTIME, &app_thread_id);
-
-  //fibo_thread_create(prvThreadEntry, "mythread", 1024*4, NULL, OSI_PRIORITY_NORMAL);
-  return (void *)&user_callback;
-
-  return 0;
-
-}
-
-/*******************************************************************************            
-* introduce:        
-* parameter:                       
-* return:                 
-* author:           Luee                                                    
-*******************************************************************************/
-static void prvInvokeGlobalCtors(void)
+void * appimg_enter(void *param)
 {
-    extern void (*__init_array_start[])();
-    extern void (*__init_array_end[])();
+    OSI_LOGI(0, "application image enter, param 0x%x", param);
 
-    size_t count = __init_array_end - __init_array_start;
-    for (size_t i = 0; i < count; ++i)
-        __init_array_start[i]();
+    prvInvokeGlobalCtors();
+
+    fibo_thread_create(prvThreadEntry, "mythread", 1024*4, NULL, OSI_PRIORITY_NORMAL);
+    return (void *)&user_callback;
 }
 
-/*******************************************************************************            
-* introduce:        
-* parameter:                       
-* return:                 
-* author:           Luee                                                    
-*******************************************************************************/
 void appimg_exit(void)
 {
     OSI_LOGI(0, "application image exit");
 }
+
+*/
