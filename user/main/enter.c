@@ -16,6 +16,7 @@
 #include "appTask.h"
 
 
+
 //===========ble================================================================
 typedef enum
 {
@@ -81,6 +82,7 @@ UINT8 data_write_callback(void *param)
 {
 	//UINT8 datalen = 0;
 	OSI_PRINTFI("[AUTO_BLE][%s:%d]wifimgr_value=%s", __FUNCTION__, __LINE__,wifimgr_value);
+	APP_DEBUG("ble buf=%s\r\n",wifimgr_value);
 	memset(wifimgr_value,0,512);
 	memcpy(wifimgr_value,"abcd123456",10);
 	
@@ -134,6 +136,7 @@ UINT8 wifimgr_value_write_cb(void *param)
 
 UINT8 wifimgr_value_read_cb(void *param)
 {
+	APP_DEBUG("read ble buf=%s\r\n",wifimgr_value);
     if(param != NULL)
     {
 		gatt_srv_write_notify_t *pAttr = (gatt_srv_write_notify_t *)param;
@@ -411,15 +414,10 @@ static void prvThreadEntry(void *param)
 
 	OSI_PRINTFI("[AUTO_BLE][%s:%d] current thread ID = 0x%x", __FUNCTION__, __LINE__,fibo_thread_id());
 
+	watchdogns(10);
 	fibo_bt_onoff(1);
 	//fibo_taskSleep(2000);
-    for (int n = 0; n < 2; n++){
-            OSI_LOGI(0, "hello world %d", n);
-            APP_DEBUG("Luee test by debug print %d\r\n",n);
-            fibo_taskSleep(500);
-            Watchdog_feed();
-            fibo_watchdog_feed();
-        }
+    watchdogns(2);
 	uint8 name_set[28] = {0};
 	memset(name_set,0,28);
 	memcpy(name_set,"8910_ble",sizeof("8910_ble"));
@@ -429,43 +427,33 @@ static void prvThreadEntry(void *param)
 
 	
 	//fibo_taskSleep(2000);
-    for (int n = 0; n < 2; n++){
-            OSI_LOGI(0, "hello world %d", n);
-            APP_DEBUG("Luee test by debug print %d\r\n",n);
-            fibo_taskSleep(500);
-            Watchdog_feed();
-            fibo_watchdog_feed();
-        }
-
+	watchdogns(2);
 	char addr[18] = {0};
 	
 	uint8_t name[41] = {0};
 	fibo_ble_set_read_name(1,name,0);
 	OSI_PRINTFI("[AUTO_BLE][%s:%d] name = %s", __FUNCTION__, __LINE__,name);
+	APP_DEBUG("ble name is %s\r\n",name);
 	
 	size = sizeof(config_wifi_service)/sizeof(gatt_element_t);
 	OSI_PRINTFI("[AUTO_BLE][%s:%d] size = %d", __FUNCTION__, __LINE__,size);
 	fibo_ble_add_service_and_characteristic(config_wifi_service,size); //create serive and characteristic
+	//fibo_ble_add_service_and_characteristic(&config_wifi_service[2],sizeof(gatt_element_t)); //create serive and characteristic
+	APP_DEBUG("UUID=%X\r\n",config_wifi_service[2].uuid.uuid_s);
 	//fibo_taskSleep(2000);
-    for (int n = 0; n < 2; n++){
-            OSI_LOGI(0, "hello world %d", n);
-            APP_DEBUG("Luee test by debug print %d\r\n",n);
-            fibo_taskSleep(500);
-            Watchdog_feed();
-            fibo_watchdog_feed();
-        }
+    watchdogns(2);
+
+	fibo_ble_scan_enable(1);
+
+	//fibo_taskSleep(20000);
+	watchdogns(20);
 
 
 	fibo_ble_enable_dev(1); // open broadcast
 
 	//fibo_taskSleep(2000);
-    for (int n = 0; n < 2; n++){
-            OSI_LOGI(0, "hello world %d", n);
-            APP_DEBUG("Luee test by debug print %d\r\n",n);
-            fibo_taskSleep(500);
-            Watchdog_feed();
-            fibo_watchdog_feed();
-        }
+    watchdogns(2);
+	watchdogns(20);
 #if 0
 	char adv_data[20]={0};
 	
@@ -519,10 +507,10 @@ static void fibo_ble_task(void *param)
 		switch(value)
 		{
            case 1: //send notification
-           fibo_send_notify(6,"notify");
+           fibo_send_notify(6,(u8 *)"notify");
 		   break;
 		   case 2: //send indicator
-		   fibo_send_indicator(strlen("inidicator"),"inidicator");
+		   fibo_send_indicator(strlen("inidicator"),(u8 *)"inidicator");
 		   break;
 		   default:
 		   	OSI_PRINTFI("[AUTO_BLE][%s:%d]", __FUNCTION__, __LINE__);
@@ -533,6 +521,7 @@ static void fibo_ble_task(void *param)
 
 }
 
+/*
 void * appimg_enter(void *param)
 {
     OSI_LOGI(0, "application image enter, param 0x%x", param);
@@ -548,6 +537,7 @@ void * appimg_enter(void *param)
 	fibo_thread_create(fibo_ble_task, "fibo_ble_task", 1024*4, NULL, OSI_PRIORITY_NORMAL);
     return (void *)&user_callback;
 }
+*/
 
 void appimg_exit(void)
 {
@@ -700,7 +690,7 @@ static void prvThreadEntry(void *param)
 * return:                 
 * author:           Luee                                                    
 *******************************************************************************/
-/*
+
 void * appimg_enter(void *param) {
   UINT32 net_thread_id = 0;
   UINT32 app_thread_id = 0;
@@ -766,13 +756,22 @@ void * appimg_enter(void *param) {
 
   Watchdog_init();
 
-  fibo_thread_create(prvThreadEntry, "mythread", 1024*4, NULL, OSI_PRIORITY_NORMAL);
+  //fibo_thread_create(prvThreadEntry, "mythread", 1024*4, NULL, OSI_PRIORITY_NORMAL);
+	// return (void *)&user_callback;
+//BLE
+   if(g_fibo_ble_queue == 0)
+    {
+		g_fibo_ble_queue = fibo_queue_create(20, sizeof(int));
+	}
+
+    fibo_thread_create(prvThreadEntry, "mythread", 1024*4, NULL, OSI_PRIORITY_NORMAL);
+	fibo_thread_create(fibo_ble_task, "fibo_ble_task", 1024*4, NULL, OSI_PRIORITY_NORMAL);
     return (void *)&user_callback;
 
   return 0;
 
 }
-*/
+
 /*******************************************************************************            
 * introduce:        
 * parameter:                       

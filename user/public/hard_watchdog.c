@@ -56,3 +56,17 @@ void Watchdog_stop(void) {
   APP_DEBUG("feed stop!!\r\n");
   //log_save("wdt feed stop!!!\r\n");       //Luee 暂时去掉
 }
+
+/*******************************************************************************
+ Brief    : delay ns with watchdog
+ Parameter: 
+ return   : 
+*******************************************************************************/
+void watchdogns(u8 ns)
+{
+	for (int n = 0; n < ns; n++){
+        fibo_taskSleep(500);
+        Watchdog_feed();
+        fibo_watchdog_feed();
+    }
+}

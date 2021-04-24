@@ -30,13 +30,13 @@ extern void Debug_output(u8_t *p, u16_t len);
 
 #define APP_DEBUG(FORMAT,...)  {\
   r_memset(DebugBuffer, 0, DBG_BUF_LEN);\
-  snprintf(DebugBuffer,DBG_BUF_LEN,"%s>>"FORMAT,__func__,##__VA_ARGS__);\
+  snprintf(DebugBuffer,DBG_BUF_LEN,"%s:%d>>"FORMAT,__func__,__LINE__,##__VA_ARGS__);\
   Debug_output((u8_t*)DebugBuffer, r_strlen(DebugBuffer));\
 }
 extern void Print_output(u8_t *p, u16_t len);
 #define APP_PRINT(FORMAT,...) {\
   r_memset(DebugBuffer, 0, DBG_BUF_LEN);\
-  snprintf(DebugBuffer,DBG_BUF_LEN,"%s>>"FORMAT,__func__,##__VA_ARGS__);\
+  snprintf(DebugBuffer,DBG_BUF_LEN,"%s:%d>>"FORMAT,__func__,__LINE__,##__VA_ARGS__);\
   Print_output((u8_t*)DebugBuffer, r_strlen(DebugBuffer));\
 }
 
