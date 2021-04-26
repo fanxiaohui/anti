@@ -44,7 +44,7 @@ include_directories(user/server)
 include_directories(user/server/CommonServer)
 include_directories(user/server/eybond)
 include_directories(user/server/StatcGrid)
-#include_directories(user/ble)
+include_directories(user/ble)
 
 function(cpp_only target file)
     add_library(${target} OBJECT ${file})
@@ -141,7 +141,7 @@ set(CUSTOMER_ID 000)
     user/public/Debug.c
     user/public/hard_watchdog.c
     user/public/utility.c
-    #user/ble/oc_ble_client_demo.c
+    user/ble/ble_task.c
     )   
 
     target_link_libraries(${target} PRIVATE ${libc_file_name} ${libm_file_name} ${libgcc_file_name})
