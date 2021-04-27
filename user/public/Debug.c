@@ -14,6 +14,7 @@
 //app
 #include "Debug.h"
 #include "utility.h"
+#include "ble_task.h"
 
 
 #ifdef  EYBOND_DEBUG_ENABLE
@@ -48,10 +49,16 @@ void UARTDEBUG_CallBack(hal_uart_port_t uart_port, UINT8 *data, UINT16 len, void
       UARTDEBUG_buf.lenght = 0;
       r_memset(UARTDEBUG_buf.payload, '\0', UARTDEBUG_buf.size);
       r_memcpy(UARTDEBUG_buf.payload, data, len);
-      UARTDEBUG_buf.lenght = len;
+      UARTDEBUG_buf.lenght = len;     //UARTDEBUG_buf debug recieved data
 
-//下面一行暂时关闭，之后再调试 Luee
+      //下面一行暂时关闭，之后再调试 Luee
       //Eybpub_UT_SendMessage(EYBAPP_TASK, APP_DEBUG_MSG_ID, (u32_t)(&UARTDEBUG_buf), (u32_t)((void*)Debug_buffer),0);
+      
+      //BLE
+      Ql_OS_SendMessage(BLE_TASK, BLE_DEBUG_MSG_ID, (u32_t)(&UARTDEBUG_buf), (u32_t)((void*)Debug_buffer),0);
+
+      
+      
       break;
     }
     default:

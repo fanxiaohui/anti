@@ -9,11 +9,16 @@
 #include <stdlib.h>
 #include <string.h>
 //lib
-
+#include "r_memory.h"
+#include "typedef.h"
+#include "r_stdlib.h"
 //app
 #include "Debug.h"
 #include "hard_watchdog.h"
 #include "ble_task.h"
+#include "utility.h"
+
+static Buffer_t *debug_input_buf;
 
 
 
@@ -44,10 +49,17 @@ UINT16 			BLE_ReadLen;
 char 			BLE_PublicData[BLE_BUFFER_SIZE];
 UINT16 			BLE_PublicLen;
 
+//手机AT命令发送
 UINT8 data_read_callback(void *param)
 {
-	memcpy(BLE_ReadData,BLE_PublicData,strlen(BLE_PublicData)); 
-    APP_DEBUG("client phone rec:BLE_ReadData=%s,len=%d\r\n",BLE_ReadData,strlen(BLE_ReadData));
+	//u16 len=0;
+	//len=r_strlen(BLE_PublicData);
+	//if(len){
+		r_memcpy(BLE_ReadData,BLE_PublicData,strlen(BLE_PublicData)); 
+		r_memset(BLE_PublicData,0,sizeof(BLE_PublicData));
+    	APP_DEBUG("client phone rec:BLE_PublicData=%s,len=%d\r\n",BLE_ReadData,strlen(BLE_ReadData));
+		r_memset(BLE_ReadData,0,sizeof(BLE_ReadData));
+	//}
 	return 0;
 }
 
@@ -57,14 +69,27 @@ UINT8 data_write_callback(void *param)
 	//将手机发过来的BLE_PublicData拷贝到BLE_WriteData
 	memcpy(BLE_WriteData,BLE_PublicData,strlen(BLE_PublicData)); 
 	memset(BLE_PublicData,0,sizeof(BLE_PublicData));
-	APP_DEBUG("client phone send:BLE_WriteData=%s,len=%d\r\n",BLE_WriteData,strlen(BLE_WriteData));
+	APP_DEBUG("client phone send len=%d,data:\r\n",strlen(BLE_WriteData));
+	APP_DEBUG("%s\r\n",BLE_WriteData);
 	BLE_WriteLen = strlen(BLE_WriteData);
 	char BLE_RecvData_Copy[BLE_BUFFER_SIZE]={0};
 	if(BLE_WriteLen>4)
 	{
 		memcpy(BLE_RecvData_Copy,BLE_WriteData,BLE_WriteLen); 
+		// 
+        if (BLE_WriteLen > 2 && 0 == r_strncmp((char *)BLE_RecvData_Copy, "AT", 2)) {
+          //r_memcpy(&debug_input_buf->payload[debug_input_buf->lenght], "\r\n", 3);
+          //debug_input_buf->lenght += 3;
+		  APP_DEBUG("phone input AT cmd\r\n");
+          //fibo_at_send(buf->payload, buf->lenght);
+        } else {
+          //strCmp(buf, (void_fun_bufp)((void *)msg.param2));
+        }
+
 		// uart_set_get_para(BLE_RecvData_Copy);	
 		//AT_command_analysis(BLE_RecvData_Copy);//AT命令解析
+
+		
 	}
 	memset(BLE_WriteData,0,sizeof(BLE_WriteData));
 	return 0;
@@ -122,6 +147,7 @@ UINT8 data_pass_write_callback(void *param)
 	memset(BLE_PASS_WriteData,0,sizeof(BLE_PASS_WriteData));
 */
 	watchdogns(1);
+	//将手机发送的数据返回给手机
 	memcpy(BLE_PASS_PublicData,BLE_PASS_RecvData_Copy,BLE_PASS_WriteLen);
 	memset(BLE_PASS_WriteData,0,sizeof(BLE_PASS_WriteData));
 	return 0;
@@ -218,6 +244,8 @@ gatt_element_t config_ble_service[]={//配置蓝牙服务
 
 void ble_task(void *param)
 {
+	ST_MSG msg;
+	
     fibo_taskSleep(1000);//不能删
     INT32 kgret = fibo_bt_onoff(1);//0:关闭蓝牙 1：打开蓝牙
 	if(kgret >= 0){
@@ -291,19 +319,37 @@ void ble_task(void *param)
 		APP_DEBUG("\r\ngbret is %d ble_enable_broadcast fail\r\n",gbret);
 	}
 
-	while(1)
-	{
-        for (int n = 0; n < 10; n++){
-            OSI_LOGI(0, "hello world %d", n);
-            fibo_taskSleep(500);
-            Watchdog_feed();
-            fibo_watchdog_feed();
-        }
-		APP_DEBUG("\r\nblever is %s\r\n",blever);
+	while(1){
+		//APP_DEBUG("\r\nblever is %s\r\n",blever);
 		APP_DEBUG("\r\nnblepubaddr is %s\r\n",blepubaddr);
-	}
+		//watchdogns(10);
+		
+		u32 msg_ret=fibo_queue_get(BLE_TASK, (void *)&msg, 0);
+		if(msg_ret==0){
+			switch(msg.message){
+				case BLE_DEBUG_MSG_ID:									
+				debug_input_buf = (Buffer_t *)msg.param1;
+				//将DEBUG输入数据发送给手机
+				r_memcpy(BLE_PublicData,debug_input_buf->payload,debug_input_buf->lenght);
 
-    fibo_thread_delete();
+
+        		APP_DEBUG("ble task BLE_DEBUG_MSG_ID:%s %d\r\n", (char *) debug_input_buf->payload, debug_input_buf->lenght);
+        		if (debug_input_buf->lenght > 2 && 0 == r_strncmp((char *)debug_input_buf->payload, "AT", 2)) {
+        		  //r_memcpy(&debug_input_buf->payload[debug_input_buf->lenght], "\r\n", 3);
+        		  //debug_input_buf->lenght += 3;
+				  APP_DEBUG("decode debug input AT cmd\r\n");
+        		  //fibo_at_send(buf->payload, buf->lenght);
+        		} else {
+        		  //strCmp(buf, (void_fun_bufp)((void *)msg.param2));
+        		}
+				break;
+
+				default :
+				break;
+			}
+		}	
+	}
+	fibo_thread_delete();
 }
 
 

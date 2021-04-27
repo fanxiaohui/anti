@@ -1,5 +1,5 @@
 /******************************************************************************           
-* name:             grid_tool.h           
+* name:                        
 * introduce:        头文件
 * author:           Luee                                     
 ******************************************************************************/ 
@@ -7,6 +7,7 @@
 #define _UTILITY_H_
 
 #include "oc_uart.h"
+#include "typedef.h"
 
 #define NET_LED			(24)
 #define GSM_LED			(26)
@@ -32,6 +33,17 @@
 
 #define PINLEVEL_LOW      0
 #define PINLEVEL_HIGH     1
+
+extern UINT32 APP_TASK;
+extern UINT32 NET_TASK;
+extern UINT32 DEVICE_TASK;
+extern UINT32 EYBOND_TASK;
+extern UINT32 ALIYUN_TASK;
+extern UINT32 FOTA_TASK;
+extern UINT32 UPDATE_TASK;
+extern UINT32 COMMON_SERVER_TASK;
+extern UINT32 ANTI_REFLUX_TASK;
+extern UINT32 BLE_TASK;
 
 typedef struct {
   u32_t  message;

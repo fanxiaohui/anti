@@ -15,6 +15,18 @@
 #include "hard_watchdog.h"
 #include "appTask.h"
 #include "ble_task.h"
+#include "utility.h"
+
+UINT32 APP_TASK = 0;
+UINT32 NET_TASK = 0;
+UINT32 DEVICE_TASK = 0;
+UINT32 EYBOND_TASK = 0;
+UINT32 ALIYUN_TASK = 0;
+UINT32 FOTA_TASK = 0;
+UINT32 UPDATE_TASK = 0;
+UINT32 COMMON_SERVER_TASK = 0;
+UINT32 ANTI_REFLUX_TASK=0;
+UINT32 BLE_TASK=0;
 
 
 
@@ -73,6 +85,7 @@ void * appimg_enter(void *param) {
   UINT32 upd_thread_id = 0;
   UINT32 com_thread_id = 0;
   UINT32 anti_thread_id=0;
+  UINT32 ble_thread_id=0;
 
 
   OSI_LOGI(0, "application image enter");
@@ -136,7 +149,21 @@ void * appimg_enter(void *param) {
 	//	g_fibo_ble_queue = fibo_queue_create(20, sizeof(int));
 	//}
 
-    fibo_thread_create(prvThreadEntry, "mythread", 1024*4, NULL, OSI_PRIORITY_NORMAL);
+
+  //消息队列建立
+  APP_TASK = fibo_queue_create(10, sizeof(ST_MSG));
+  NET_TASK = fibo_queue_create(10, sizeof(ST_MSG));
+  DEVICE_TASK = fibo_queue_create(10, sizeof(ST_MSG));
+  EYBOND_TASK = fibo_queue_create(10, sizeof(ST_MSG));
+  ALIYUN_TASK = fibo_queue_create(10, sizeof(ST_MSG));
+  FOTA_TASK = fibo_queue_create(10, sizeof(ST_MSG));
+  UPDATE_TASK = fibo_queue_create(10, sizeof(ST_MSG));
+  COMMON_SERVER_TASK = fibo_queue_create(10, sizeof(ST_MSG));
+  ANTI_REFLUX_TASK=fibo_queue_create(10,sizeof(ST_MSG));
+  BLE_TASK = fibo_queue_create(10, sizeof(ST_MSG));
+
+
+  fibo_thread_create(prvThreadEntry, "mythread", 1024*4, NULL, OSI_PRIORITY_NORMAL);
 	fibo_thread_create(ble_task, "ble_task", 1024*4, NULL, OSI_PRIORITY_NORMAL);
 	//fibo_thread_create(fibo_ble_task, "fibo_ble_task", 1024*4, NULL, OSI_PRIORITY_NORMAL);
     //return (void *)&user_callback;
