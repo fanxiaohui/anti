@@ -140,6 +140,6 @@ s32_t Ql_OS_SendMessage(s32_t destTaskId, u32_t msgId, u32_t param1, u32_t param
 
   overtime=param3;
   if(param3==0)
-    overtime=2000;
+    overtime=10000;
   return fibo_queue_put(destTaskId, &msg, overtime);    //Luee 
 }
