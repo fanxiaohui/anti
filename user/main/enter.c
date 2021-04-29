@@ -42,6 +42,9 @@ static void prvThreadEntry(void *param)
             fibo_taskSleep(500);
             Watchdog_feed();
             fibo_watchdog_feed();
+            //Ql_OS_SendMessage(BLE_TASK, BLE_DEBUG_INPUT_PROCESS, 0, 0,0);
+            if(ble_rec_delay)
+              ble_rec_delay--;
         }
 	}
 

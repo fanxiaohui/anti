@@ -12,16 +12,21 @@
 #include "r_memory.h"
 #include "typedef.h"
 #include "r_stdlib.h"
+#include "list.h"
 //app
 #include "Debug.h"
 #include "hard_watchdog.h"
 #include "ble_task.h"
 #include "utility.h"
+#include "history.h"
 
 static Buffer_t *debug_input_buf;
+static ListHandler_t debug_input_list;
 
+u8 ble_rec_delay=0;
 
-
+static void debug_input_data_to_BLE(void);
+static void debug_input_data_process(void);
 //===========ble================================================================
 static gatt_chara_def_short_t ble_mgr_chara = {{
 	ATT_CHARA_PROP_READ | ATT_CHARA_PROP_WRITE,
@@ -52,15 +57,22 @@ UINT16 			BLE_PublicLen;
 //手机AT命令发送
 UINT8 data_read_callback(void *param)
 {
-	//u16 len=0;
-	//len=r_strlen(BLE_PublicData);
-	//if(len){
-		r_memcpy(BLE_ReadData,BLE_PublicData,strlen(BLE_PublicData)); 
-		r_memset(BLE_PublicData,0,sizeof(BLE_PublicData));
-    	APP_DEBUG("client phone rec:BLE_PublicData=%s,len=%d\r\n",BLE_ReadData,strlen(BLE_ReadData));
-		r_memset(BLE_ReadData,0,sizeof(BLE_ReadData));
-	//}
+	u16 len=0;
+
+	r_memcpy(BLE_ReadData,BLE_PublicData,strlen(BLE_PublicData)); 
+	len=r_strlen(BLE_ReadData);
+	if(len==0 && ble_rec_delay==0){
+		//Ql_OS_SendMessage(BLE_TASK, BLE_DEBUG_INPUT_PROCESS, 0, 0,0);
+		debug_input_data_process();
+		return 0;
+	}else{
+	r_memset(BLE_PublicData,0,sizeof(BLE_PublicData));
+    APP_DEBUG("client phone rec:BLE_PublicData=%s,len=%d\r\n",BLE_ReadData,strlen(BLE_ReadData));
+	r_memset(BLE_ReadData,0,sizeof(BLE_ReadData));
 	return 0;
+	}
+	
+
 }
 
 //手机AT命令接收
@@ -69,6 +81,10 @@ UINT8 data_write_callback(void *param)
 	//将手机发过来的BLE_PublicData拷贝到BLE_WriteData
 	memcpy(BLE_WriteData,BLE_PublicData,strlen(BLE_PublicData)); 
 	memset(BLE_PublicData,0,sizeof(BLE_PublicData));
+	ble_rec_delay=2;		//ble接收后延时2S，才许可自动发送
+	//list_delete(&debug_input_list);
+	//list_init(&debug_input_list);
+
 	APP_DEBUG("client phone send len=%d,data:\r\n",strlen(BLE_WriteData));
 	APP_DEBUG("%s\r\n",BLE_WriteData);
 	BLE_WriteLen = strlen(BLE_WriteData);
@@ -241,10 +257,53 @@ gatt_element_t config_ble_service[]={//配置蓝牙服务
 	}
 };
 
+static void debug_input_data_to_BLE(void)
+{
+	if(r_strlen(BLE_PublicData)==0){
+		//将DEBUG输入数据发送给手机
+		r_memcpy(BLE_PublicData,debug_input_buf->payload,debug_input_buf->lenght);
+    	APP_DEBUG("debug input data put to BLE buf:%s %d\r\n", (char *) debug_input_buf->payload, debug_input_buf->lenght);
+    	if (debug_input_buf->lenght > 2 && 0 == r_strncmp((char *)debug_input_buf->payload, "AT", 2)) {
+		  APP_DEBUG("decode debug input AT cmd\r\n");
+		}
+    } 
+}
 
+/*******************************************************************************            
+* introduce:        
+* parameter:                       
+* return:                 
+* author:           Luee                                                    
+*******************************************************************************/
+static void debug_input_data_process(void) {
+  if(r_strlen(BLE_PublicData)==0){
+		//将DEBUG输入数据发送给手机
+		buf_t *buf=(buf_t *)list_nextData(&debug_input_list,null);
+  		if (null == buf) {
+			list_delete(&debug_input_list);
+			list_init(&debug_input_list);
+    		return;
+  		}
+		r_memcpy(BLE_PublicData,buf->payload,buf->lenght);
+    	APP_DEBUG("debug input data put to BLE buf:%s %d\r\n", (char *) buf->payload, buf->lenght);
+    	if (buf->lenght > 2 && 0 == r_strncmp((char *)buf->payload, "AT", 2)) {
+		  APP_DEBUG("decode debug input AT cmd\r\n");
+		}
+		list_nodeDelete(&debug_input_list, buf);
+    } 
+}
+
+/*******************************************************************************            
+* introduce:        
+* parameter:                       
+* return:                 
+* author:           Luee                                                    
+*******************************************************************************/
 void ble_task(void *param)
 {
 	ST_MSG msg;
+
+	list_init(&debug_input_list);
 	
     fibo_taskSleep(1000);//不能删
     INT32 kgret = fibo_bt_onoff(1);//0:关闭蓝牙 1：打开蓝牙
@@ -327,21 +386,38 @@ void ble_task(void *param)
 		u32 msg_ret=fibo_queue_get(BLE_TASK, (void *)&msg, 0);
 		if(msg_ret==0){
 			switch(msg.message){
-				case BLE_DEBUG_MSG_ID:									
+				case BLE_DEBUG_MSG_ID:
+				//得到debug输入buf:debug_input_buf									
 				debug_input_buf = (Buffer_t *)msg.param1;
-				//将DEBUG输入数据发送给手机
-				r_memcpy(BLE_PublicData,debug_input_buf->payload,debug_input_buf->lenght);
 
+				//如果BLE buf:是空的，则放入buf,否则将数据放入链表
+				if(r_strlen(BLE_PublicData)==0){
+					//将DEBUG输入数据发送给手机
+					r_memcpy(BLE_PublicData,debug_input_buf->payload,debug_input_buf->lenght);
+        			APP_DEBUG("debug input data put to BLE buf:%s %d\r\n", (char *) debug_input_buf->payload, debug_input_buf->lenght);
+        			if (debug_input_buf->lenght > 2 && 0 == r_strncmp((char *)debug_input_buf->payload, "AT", 2)) {
+					  APP_DEBUG("decode debug input AT cmd\r\n");
+					}
+				}else{
+					////////////////////////////////////////////////////////////////
+					buf_t *list_buf=list_nodeApply(debug_input_buf->lenght);
+			    	if (list_buf == null) {
+			    	  //log_save("list_buf memory apply fail!!");
+					  APP_DEBUG("list_buf memory apply fail!!")
+					  break;
+			    	} else {
+			    	  list_buf->lenght = debug_input_buf->lenght; 
+			    	  r_memcpy(list_buf->payload, debug_input_buf->payload, debug_input_buf->lenght); // 把指令放入列表节点的内存
+			    	  list_bottomInsert(&debug_input_list, list_buf);   // 把debug输入插入列表节点
 
-        		APP_DEBUG("ble task BLE_DEBUG_MSG_ID:%s %d\r\n", (char *) debug_input_buf->payload, debug_input_buf->lenght);
-        		if (debug_input_buf->lenght > 2 && 0 == r_strncmp((char *)debug_input_buf->payload, "AT", 2)) {
-        		  //r_memcpy(&debug_input_buf->payload[debug_input_buf->lenght], "\r\n", 3);
-        		  //debug_input_buf->lenght += 3;
-				  APP_DEBUG("decode debug input AT cmd\r\n");
-        		  //fibo_at_send(buf->payload, buf->lenght);
-        		} else {
-        		  //strCmp(buf, (void_fun_bufp)((void *)msg.param2));
-        		}
+			    	  Ql_OS_SendMessage(BLE_TASK, BLE_DEBUG_INPUT_PROCESS, 0, 0,0);
+					}
+					////////////////////////////////////////////////////////////////
+				}
+				break;
+
+				case BLE_DEBUG_INPUT_PROCESS:
+				debug_input_data_process();									
 				break;
 
 				default :

@@ -141,6 +141,7 @@ set(CUSTOMER_ID 000)
     user/public/Debug.c
     user/public/hard_watchdog.c
     user/public/utility.c
+    user/public/run_log.c
     user/ble/ble_task.c
     )   
 

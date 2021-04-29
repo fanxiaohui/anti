@@ -1,4 +1,4 @@
-/**************Copyright(C)��2015-2026��Shenzhen Eybond Co., Ltd.***************
+/**************Copyright(C)锟斤拷2015-2026锟斤拷Shenzhen Eybond Co., Ltd.***************
   *@brief   : CommonServer.c 
   *@notes   : 2018.06.03 CGQ establish
 *******************************************************************************/
@@ -6,8 +6,10 @@
 #define __COMMON_SERVER_H	 
 
 #include "typedef.h"
-#include "ql_type.h"
-#include "SysPara.h"
+//#include "ql_type.h"
+//#include "oc_type.h"
+//#include "SysPara.h"
+#include "grid_tool.h"
 #include "list.h"
 
 #define COMMON_SERVER_TASK        subtask5_id
