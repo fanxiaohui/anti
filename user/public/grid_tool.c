@@ -18,6 +18,8 @@
 #include "Debug.h"
 #include "utility.h"
 #include "grid_tool.h"
+#include "data_collector_parameter_table.h"
+#include "run_log.h"
 
 /*
 #include "eyblib_memory.h"

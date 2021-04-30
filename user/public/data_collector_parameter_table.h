@@ -4,8 +4,8 @@
  * @Date    : 2020-08-20
  * @Brief   :
  ******************************************************************************/
-#ifndef __EYBPUB_DATA_COLLECTOR_PARAMETER_TABLE_H__
-#define __EYBPUB_DATA_COLLECTOR_PARAMETER_TABLE_H__
+#ifndef __DATA_COLLECTOR_PARAMETER_TABLE_H__
+#define __DATA_COLLECTOR_PARAMETER_TABLE_H__
 
 #include "struct_type.h"
 extern int number_of_array_elements;

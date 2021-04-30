@@ -28,7 +28,7 @@ const char PortocolVer[] = "2.0.0.0";
 const char SoftCompileDate[] = __DATE__;
 const char SoftCompileTime[] = __TIME__;
 
-static u8_t auth;  //��Ȩ�ޱ��
+static u8_t auth;  //锟斤拷权锟睫憋拷锟�
 
 const SysDefParaTab_t defaultPara[] = {
 	{  0, 1, "Enable"},	//enable parameter write
@@ -427,9 +427,9 @@ static int authGet(Buffer_t *buf)
 }
 
 /*******************************************************************************
- Brief    : Flash �˶�
+ Brief    : Flash 锟剿讹拷
  Parameter: null
- return   : 0 : ����   1: �쳣
+ return   : 0 : 锟斤拷锟斤拷   1: 锟届常
 *******************************************************************************/
 static u8_t Flash_check(void)
 {
@@ -447,9 +447,9 @@ static u8_t Flash_check(void)
 
 
 /*******************************************************************************
- Brief    : Flash �˶�
+ Brief    : Flash 锟剿讹拷
  Parameter: null
- return   : 0 : ����   1: �쳣
+ return   : 0 : 锟斤拷锟斤拷   1: 锟届常
 *******************************************************************************/
 ServerAddr_t *ServerAdrrGet(u8_t num)
 {

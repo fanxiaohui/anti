@@ -28,6 +28,7 @@ u8_t  Swap_signedString(char *buf, s32_t num);
 void  Swap_numCharFixed(char *buf, u8_t bufLen, u64_t num);
 u8_t  Swap_CharString(char *buf, s8_t num) ;
 int r_strsplit(ListHandler_t *subStr , char *str, char ch);
+void hextostr(void *hexbuff, void * strtarget, u32_t len);
 
 #endif //Swap.h end
 /*******************************Copyright QYKJ*********************************/

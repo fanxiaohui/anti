@@ -167,7 +167,7 @@ void * appimg_enter(void *param) {
 
 
   fibo_thread_create(prvThreadEntry, "mythread", 1024*4, NULL, OSI_PRIORITY_NORMAL);
-	fibo_thread_create(ble_task, "ble_task", 1024*4, NULL, OSI_PRIORITY_NORMAL);
+	fibo_thread_create(ble_task, "ble_task", 1024*8, NULL, OSI_PRIORITY_NORMAL);
 	//fibo_thread_create(fibo_ble_task, "fibo_ble_task", 1024*4, NULL, OSI_PRIORITY_NORMAL);
     //return (void *)&user_callback;
 

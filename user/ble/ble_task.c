@@ -55,16 +55,13 @@ char 			BLE_PublicData[BLE_BUFFER_SIZE]={0};
 UINT16 			BLE_PublicLen;
 
 //手机AT命令发送
+//发送结束，会回调两次此函数
 UINT8 data_read_callback(void *param)
 {
 	u16 len=0;
 
 	r_memcpy(BLE_ReadData,BLE_PublicData,strlen(BLE_PublicData)); 
-	//r_memset(BLE_PublicData,0,sizeof(BLE_PublicData));
-    //APP_DEBUG("client phone rec:BLE_PublicData=%s,len=%d\r\n",BLE_ReadData,strlen(BLE_ReadData));
-	//r_memset(BLE_ReadData,0,sizeof(BLE_ReadData));
-	//return 0;
-
+	//BLE_ReadData 空，则处理DEBUG串口发过来的链表数据
 	len=r_strlen(BLE_ReadData);
 	if(len==0){
 		Ql_OS_SendMessage(BLE_TASK, BLE_DEBUG_INPUT_PROCESS, 0, 0,0);
@@ -337,6 +334,13 @@ void ble_task(void *param)
 	//设置BLE名称
 	INT32 snret = fibo_ble_set_read_name(0,(uint8_t *)PN_buf,0); 	//set ble name 0表示设置 
 */
+
+	//Buffer_t *parabuf=null;
+	//SysPara_Get(2,parabuf);		//得到PN值
+	////设置BLE名称
+	//INT32 snret = fibo_ble_set_read_name(0,(uint8_t *)parabuf->payload,0); 	//set ble name 0表示设置 
+	//memory_release(parabuf->payload);
+	
 	INT32 snret = fibo_ble_set_read_name(0,(uint8_t *)"8910_ble",0); 	//set ble name 0表示设置
 	if(snret >= 0){
 		APP_DEBUG("\r\nsnret is %d set ble name success\r\n",snret);
@@ -394,26 +398,8 @@ void ble_task(void *param)
 				case BLE_DEBUG_MSG_ID:
 				//得到debug输入buf:debug_input_buf									
 				debug_input_buf = (Buffer_t *)msg.param1;
-
-				/*
-				//如果BLE buf:是空的，则放入buf,否则将数据放入链表
-				buf_t *list_buf=list_nodeApply(debug_input_buf->lenght+2);
-			    if (list_buf == null) {
-			      //log_save("list_buf memory apply fail!!");
-				  APP_DEBUG("list_buf memory apply fail!!")
-				  break;
-			    } else {
-			      list_buf->lenght = debug_input_buf->lenght; 
-			      r_memcpy(list_buf->payload, debug_input_buf->payload, debug_input_buf->lenght); // 把指令放入列表节点的内存
-			      list_bottomInsert(&debug_input_list, list_buf);   // 把debug输入插入列表节点
-			      Ql_OS_SendMessage(BLE_TASK, BLE_DEBUG_INPUT_PROCESS, 0, 0,0);
-				}
-				break;
-				*/
-
-
-
 				
+				//如果BLE buf:是空的，则放入buf,否则将数据放入链表
 				if(r_strlen(BLE_PublicData)==0){
 					//将DEBUG输入数据发送给手机
 					r_memcpy(BLE_PublicData,debug_input_buf->payload,debug_input_buf->lenght);
@@ -422,25 +408,21 @@ void ble_task(void *param)
 					  APP_DEBUG("decode debug input AT cmd\r\n");
 					}
 				}else{
-					////////////////////////////////////////////////////////////////
-					buf_t *list_buf=list_nodeApply(debug_input_buf->lenght +4);
+					buf_t *list_buf=list_nodeApply(debug_input_buf->lenght +4);		//长度指的是整个结构体的长度
 			    	if (list_buf == null) {
 			    	  //log_save("list_buf memory apply fail!!");
-					  APP_DEBUG("list_buf memory apply fail!!")
+					  APP_DEBUG("list_buf memory apply fail!!\r\n")
 					  break;
 			    	} else {
-			    	  list_buf->lenght = debug_input_buf->lenght; 
-			    	  r_memcpy(list_buf->payload, debug_input_buf->payload, debug_input_buf->lenght); // 把指令放入列表节点的内存
-			    	  list_bottomInsert(&debug_input_list, list_buf);   // 把debug输入插入列表节点
-
-			    	  Ql_OS_SendMessage(BLE_TASK, BLE_DEBUG_INPUT_PROCESS, 0, 0,0);
+			    	  	list_buf->lenght = debug_input_buf->lenght; 
+			    	  	r_memcpy(list_buf->payload, debug_input_buf->payload, debug_input_buf->lenght); // 把指令放入列表节点的内存
+			    	  	list_bottomInsert(&debug_input_list, list_buf);   // 把debug输入插入列表节点
+						APP_DEBUG("debug input data put to list\r\n");
+						APP_DEBUG("%s\r\n",debug_input_buf->payload);
 					}
-					////////////////////////////////////////////////////////////////
 				}
 				break;
 				
-				
-
 				case BLE_DEBUG_INPUT_PROCESS:
 				debug_input_data_process((u8 *)BLE_PublicData);									
 				break;

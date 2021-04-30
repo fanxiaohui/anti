@@ -142,6 +142,8 @@ set(CUSTOMER_ID 000)
     user/public/hard_watchdog.c
     user/public/utility.c
     user/public/run_log.c
+    user/public/grid_tool.c
+    user/public/data_collector_parameter_table.c
     user/ble/ble_task.c
     )   
 
