@@ -1,13 +1,11 @@
-﻿/******************************************************************************
-文	件：    HashMD5.c
+﻿/***************************Copyright eybond 2016.05*************************
+文	件：    eyblib_HashMD5.c
 说	明：    MD5加密算法原码
 修　改：
 *******************************************************************************/
 #include "HashMD5.h"
-#include "r_stdlib.h"
 
-const u32_t md5InitVal[] = {0x67452301, 0xefcdab89, 0x98badcfeU, 0x10325476};
-const u8_t padding[64] = {
+static u8_t padding[64] = {
   0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -18,8 +16,9 @@ const u8_t padding[64] = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
+/* forward declaration */
 static void Transform (u32_t *buf, u32_t *in);
-
+void Lib_MemCpyAll(u8_t* pDest, u8_t* pSrc, u16_t wSize);
 
 /* F, G, H and I are basic MD5 functions */
 #define F(x, y, z) (((x) & (y)) | ((~x) & (z)))
@@ -32,25 +31,25 @@ static void Transform (u32_t *buf, u32_t *in);
 
 /* FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4 */
 /* Rotation is separate from addition to prevent recomputation */
-#define FF(a, b, c, d, x, s, ac) {\
-    (a) += F ((b), (c), (d)) + (x) + (u32_t)(ac); \
-    (a) = ROTATE_LEFT ((a), (s)); \
-    (a) += (b); \
+#define FF(a, b, c, d, x, s, ac) \
+{(a) += F ((b), (c), (d)) + (x) + (u32_t)(ac); \
+ (a) = ROTATE_LEFT ((a), (s)); \
+ (a) += (b); \
 }
-#define GG(a, b, c, d, x, s, ac) {\
-    (a) += G ((b), (c), (d)) + (x) + (u32_t)(ac); \
-    (a) = ROTATE_LEFT ((a), (s)); \
-    (a) += (b); \
+#define GG(a, b, c, d, x, s, ac) \
+{(a) += G ((b), (c), (d)) + (x) + (u32_t)(ac); \
+ (a) = ROTATE_LEFT ((a), (s)); \
+ (a) += (b); \
 }
-#define HH(a, b, c, d, x, s, ac) {\
-    (a) += H ((b), (c), (d)) + (x) + (u32_t)(ac); \
-    (a) = ROTATE_LEFT ((a), (s)); \
-    (a) += (b); \
+#define HH(a, b, c, d, x, s, ac) \
+{(a) += H ((b), (c), (d)) + (x) + (u32_t)(ac); \
+ (a) = ROTATE_LEFT ((a), (s)); \
+ (a) += (b); \
 }
-#define II(a, b, c, d, x, s, ac) { \
-    (a) += I ((b), (c), (d)) + (x) + (u32_t)(ac); \
-    (a) = ROTATE_LEFT ((a), (s)); \
-    (a) += (b); \
+#define II(a, b, c, d, x, s, ac) \
+{(a) += I ((b), (c), (d)) + (x) + (u32_t)(ac); \
+ (a) = ROTATE_LEFT ((a), (s)); \
+ (a) += (b); \
 }
 
 #ifdef __STDC__
@@ -63,79 +62,105 @@ static void Transform (u32_t *buf, u32_t *in);
 #endif
 #endif
 
+/* The routine MD5Init initializes the message-digest context
+   mdContext. All fields are set to zero.
+ */
 void Hash_MD5Init (MD5_t *mdContext)
 {
-    mdContext->len = 0;
+  mdContext->i[0] = mdContext->i[1] = (u32_t)0;
 
-    /* Load magic initialization constants. */
-   	r_memcpy(mdContext->md, md5InitVal, sizeof(md5InitVal));
+  /* Load magic initialization constants. */
+  mdContext->buf[0] = (u32_t)0x67452301UL;
+  mdContext->buf[1] = (u32_t)0xefcdab89UL;
+  mdContext->buf[2] = (u32_t)0x98badcfeUL;
+  mdContext->buf[3] = (u32_t)0x10325476UL;
 }
 
-void Hash_MD5Update(MD5_t *mdContext, const u8_t *inBuf, mcu_t inLen)
+/* The routine MD5Update updates the message-digest context to
+   account for the presence of each of the characters inBuf[0..inLen-1]
+   in the message whose digest is being computed.
+ */
+void Hash_MD5Update(MD5_t *mdContext, u8_t *inBuf, u16_t inLen)
 {
-	u8_t len;
-	u8_t insert = mdContext->len&0x3F;
-    
-    mdContext->len += inLen;
-    while (inLen) 
-    {
-        len = (0x40 - insert) < inLen ? (0x40 - insert) : inLen;
-        r_memcpy((((u8_t*)mdContext->buf) + insert), inBuf, len);
-		inBuf += len;
-		inLen -= len;
-		if (0x40 == (len + insert))
-		{
-	        insert = 0;
-	        Transform (mdContext->md, mdContext->buf);
-		}
+  u32_t in[16];
+  short int mdi;
+  u16_t i, ii;
+
+#if 0
+  PPPDEBUG(LOG_INFO, ("MD5Update: %u:%.*H\n", inLen, LWIP_MIN(inLen, 20) * 2, inBuf));
+  PPPDEBUG(LOG_INFO, ("MD5Update: %u:%s\n", inLen, inBuf));
+#endif
+  
+  /* compute number of bytes mod 64 */
+  mdi = (short int)((mdContext->i[0] >> 3) & 0x3F);
+
+  /* update number of bits */
+  if ((mdContext->i[0] + ((u32_t)inLen << 3)) < mdContext->i[0]) {
+    mdContext->i[1]++;
+  }
+  mdContext->i[0] += ((u32_t)inLen << 3);
+  mdContext->i[1] += ((u32_t)inLen >> 29);
+
+  while (inLen--) {
+    /* add new character to buffer, increment mdi */
+    mdContext->in[mdi++] = *inBuf++;
+
+    /* transform if necessary */
+    if (mdi == 0x40) {
+      for (i = 0, ii = 0; i < 16; i++, ii += 4) {
+        in[i] = (((u32_t)mdContext->in[ii+3]) << 24) |
+                (((u32_t)mdContext->in[ii+2]) << 16) |
+                (((u32_t)mdContext->in[ii+1]) << 8)  |
+                ((u32_t)mdContext->in[ii]);
+      }
+      Transform (mdContext->buf, in);
+      mdi = 0;
     }
+  }
 }
+
 
 /* The routine MD5Final terminates the message-digest computation and
    ends with the desired message digest in mdContext->digest[0...15].
  */
-void Hash_MD5Final(MD5_t *mdContext)
+void Hash_MD5Final (u8_t hash[], MD5_t *mdContext)
 {
-    u8_t i = mdContext->len&0x3F;
+  u32_t in[16];
+  short int mdi;
+  u16_t i, ii;
+  u16_t padLen;
 
-    i = (i < 56) ? (56 - i) : (120 - i);
-    Hash_MD5Update(mdContext, padding, i);
-    
-    mdContext->len -= i;
-    mdContext->buf[14] = ((mdContext->len) << 3);
-    mdContext->buf[15] = ((mdContext->len) >> 29);
-    
-    Transform(mdContext->md, mdContext->buf);
-}
+  /* save number of bits */
+  in[14] = mdContext->i[0];
+  in[15] = mdContext->i[1];
 
+  /* compute number of bytes mod 64 */
+  mdi = (short int)((mdContext->i[0] >> 3) & 0x3F);
 
-void Hash_Md5Make(u8_t val[], u8_t *buffer, u32_t len)
-{
-    u32_t *md = (u32_t*)val;
-    u32_t in[16];
-    u32_t bufLen = len;
-    
-    /* Load magic initialization constants. */
-   	r_memcpy(md, md5InitVal, sizeof(md5InitVal));
+  /* pad out to 56 mod 64 */
+  padLen = (mdi < 56) ? (56 - mdi) : (120 - mdi);
+  Hash_MD5Update(mdContext, padding, padLen);
 
-    while (bufLen > 0x40)
-    {
-        Transform (md, (u32_t*)buffer);
-        bufLen -= 0x40;
-        buffer += 0x40;
-    }
-    
-    r_memcpy(in, buffer, bufLen);
-    r_memcpy(((u8_t*)in) + bufLen, padding, 0x40 - bufLen);
-    if (bufLen > 56)
-    {
-        bufLen = 0;
-        Transform (md, in);
-        r_memset(in, 0, (sizeof(in) - 8));
-    }
-    in[14] = len<<3;
-    in[15] = len>>29;
-    Transform (md, in);
+  /* append length in bits and transform */
+  for (i = 0, ii = 0; i < 14; i++, ii += 4) {
+    in[i] = (((u32_t)mdContext->in[ii+3]) << 24) |
+            (((u32_t)mdContext->in[ii+2]) << 16) |
+            (((u32_t)mdContext->in[ii+1]) << 8)  |
+            ((u32_t)mdContext->in[ii]);
+  }
+  Transform (mdContext->buf, in);
+
+  /* store buffer in digest */
+  for (i = 0, ii = 0; i < 4; i++, ii += 4) {
+    mdContext->digest[ii]   = (u8_t)(mdContext->buf[i] & 0xFF);
+    mdContext->digest[ii+1] =
+      (u8_t)((mdContext->buf[i] >> 8)  & 0xFF);
+    mdContext->digest[ii+2] =
+      (u8_t)((mdContext->buf[i] >> 16) & 0xFF);
+    mdContext->digest[ii+3] =
+      (u8_t)((mdContext->buf[i] >> 24) & 0xFF);
+  }
+  Lib_MemCpyAll(hash, mdContext->digest, 16);
 }
 
 /*校验块数值转换*/
@@ -235,6 +260,13 @@ static void Transform (u32_t *buf, u32_t *in)
   buf[1] += b;
   buf[2] += c;
   buf[3] += d;
+}
+
+void Lib_MemCpyAll(u8_t* pDest, u8_t* pSrc, u16_t wSize)
+{
+	while(wSize--){
+		*pDest++ = *pSrc++;
+	};
 }
 
 /***********************************FILE END***********************************/

@@ -33,6 +33,7 @@ set(BUILD_SHARED_LIBS OFF)
 
 project(core C CXX ASM)
 
+ADD_DEFINITIONS(-D_PLATFORM_L610_)
 include_directories(components/include components/newlib/include)
 include_directories(user/Lib)
 include_directories(user/device)
@@ -144,6 +145,8 @@ set(CUSTOMER_ID 000)
     user/public/run_log.c
     user/public/grid_tool.c
     user/public/data_collector_parameter_table.c
+    user/public/parameter_number_and_value.c
+    #user/public/history.c
     user/ble/ble_task.c
     )   
 

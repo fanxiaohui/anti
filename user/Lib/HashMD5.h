@@ -1,22 +1,22 @@
-/***************************Copyright QiYi Team 2016.05*************************
-文	件：    HashMD5.c
-说	明：    MD5加密算法头文件
-修　改：	2016.05.19 创建 Unarty
+/**************Copyright(C) 2015-2026 Shenzhen Eybond Co., Ltd.***************
+  *@brief   : HashMD5.h
+  *@notes   : 
 *******************************************************************************/
-#ifndef __HASHMD5__
-#define __HASHMD5__
+#ifndef __HASHMD5_H_
+#define __HASHMD5_H_
 
 #include "typedef.h"
 
+/* Data structure for MD5 (Message-Digest) computation */
 typedef struct {
-    u32_t  len;               /* number of _bits_ handled mod 2^32 */
-    u32_t  buf[16];               /* input buffer */
-    u32_t  md[4];             /* scratch buffer */
-}MD5_t;
+  u32_t i[2];       /* number of _bits_ handled mod 2^64 */
+  u32_t buf[4];     /* scratch buffer */
+  u8_t  in[64];     /* input buffer */
+  u8_t  digest[16]; /* actual digest after MD5Final call */
+} MD5_t;
 
-void Hash_MD5Init(MD5_t *mdContext);
-void Hash_MD5Update(MD5_t *mdContext, const u8_t *inBuf, mcu_t inLen);
-void Hash_MD5Final(MD5_t *mdContext);
-void Hash_Md5Make(u8_t val[], u8_t *buffer, u32_t len); 
+void Hash_MD5Init  ( MD5_t *mdContext);
+void Hash_MD5Update( MD5_t *mdContext, u8_t *inBuf, u16_t inLen);
+void Hash_MD5Final (u8_t hash[], MD5_t *mdContext);
 
-#endif // HashMD5 end
+#endif //__HASHMD5_H_

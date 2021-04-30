@@ -4,6 +4,19 @@
 * introduce:        history device data save for state grid 
 * author:           Luee                                     
 ******************************************************************************/ 
+//sdk
+#include <fibo_opencpu.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+//lib
+#include "typedef.h"
+#include "Swap.h"
+#include "r_stdlib.h"
+#include "r_memory.h"
+#include "list.h"
+#include "HashMD5.h"
+
 #include "history.h"
 #include "grid_tool.h"
 #include "StateGrid.h"

@@ -73,8 +73,6 @@ UINT8 data_read_callback(void *param)
 		r_memset(BLE_ReadData,0,sizeof(BLE_ReadData));
 		return 0;
 	}
-
-
 }
 
 //手机AT命令接收
@@ -83,10 +81,7 @@ UINT8 data_write_callback(void *param)
 	//将手机发过来的BLE_PublicData拷贝到BLE_WriteData
 	memcpy(BLE_WriteData,BLE_PublicData,strlen(BLE_PublicData)); 
 	memset(BLE_PublicData,0,sizeof(BLE_PublicData));
-	//ble_rec_delay=2;		//ble接收后延时2S，才许可自动发送
-	//list_delete(&debug_input_list);
-	//list_init(&debug_input_list);
-
+	
 	APP_DEBUG("client phone send len=%d,data:\r\n",strlen(BLE_WriteData));
 	APP_DEBUG("%s\r\n",BLE_WriteData);
 	BLE_WriteLen = strlen(BLE_WriteData);
@@ -105,9 +100,7 @@ UINT8 data_write_callback(void *param)
         }
 
 		// uart_set_get_para(BLE_RecvData_Copy);	
-		//AT_command_analysis(BLE_RecvData_Copy);//AT命令解析
-
-		
+		//AT_command_analysis(BLE_RecvData_Copy);//AT命令解析	
 	}
 	memset(BLE_WriteData,0,sizeof(BLE_WriteData));
 	return 0;
