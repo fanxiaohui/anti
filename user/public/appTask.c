@@ -3,6 +3,30 @@
 * introduce:        
 * author:           Luee                                     
 ******************************************************************************/ 
+//sdk
+#include <fibo_opencpu.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+//lib
+#include "r_memory.h"
+#include "typedef.h"
+#include "r_stdlib.h"
+#include "list.h"
+//app
+#include "Debug.h"
+#include "hard_watchdog.h"
+#include "ble_task.h"
+#include "utility.h"
+#include "history.h"
+#include "grid_tool.h"
+#include "run_log.h"
+#include "appTask.h"
+#include "utility.h"
+#include "Status.h"
+
+
+/*
 #include "appTask.h"
 #include "Debug.h"
 #include "Watchdog.h"
@@ -29,16 +53,23 @@
 #include "antiReflux.h"
 #include "sarnath.h"
 #include "adc.h"
+*/
 
 static void_fun_bufp outputFun;
-static DeviceInfo_t cmdHead;
+//static DeviceInfo_t cmdHead;
 static u16_t deviceLockTime;
 static u16_t logGetFlag;
+static u32_t APP_time_Interval = 500;
+static u32_t WDG_time_Interval = 1000;
+static u32_t m_timeCnt = 0;
+static u32_t m_wdgCnt = 0;
 
-static void UserTimer1scallback(u32 timerId, void* param);
+//static void UserTimer1scallback(u32 timerId, void* param);
+static void UserTimerAPPscallback(void *param);
+static void UserTimerWDGcallback(void *param);
 static void strCmp(Buffer_t *strBuf, void_fun_bufp output);
 static void outputCh(Buffer_t *buf);
-static void UanrtCh(DeviceAck_e e);
+//static void UanrtCh(DeviceAck_e e);
 static int logGet(Buffer_t *buf);
 
 
@@ -47,6 +78,59 @@ static int logGet(Buffer_t *buf);
  Parameter: 
  return   : 
 *******************************************************************************/
+void proc_app_task(s32 taskId)
+{
+	u32 APP_timer = 0;  //unit 0.5s
+	u32 WDG_timer=0;	//1s
+	ST_MSG msg;
+	Buffer_t *buf;	
+	
+	outputFun = null;
+	logGetFlag = 0;
+
+	log_init();
+
+	APP_timer = fibo_timer_period_new(APP_time_Interval, UserTimerAPPscallback, &m_timeCnt);    
+    if (APP_timer == 0) {
+        log_save("Register app timer(%ld) fail", APP_timer);
+    }
+
+	WDG_timer = fibo_timer_period_new(WDG_time_Interval, UserTimerWDGcallback, NULL);  
+  	if (WDG_timer == 0) {
+    	log_save("Register hard wdt timer(%d) failed!!\r\n");
+  	}
+
+	while(1){
+		fibo_queue_get(APP_TASK, (void *)&msg, 0);
+    	switch (msg.message) {
+		case APP_MSG_TIMER_ID :
+			break;
+		
+		case APP_MSG_WDG_ID :{
+			Watchdog_feed();
+        	m_wdgCnt++;
+        	if (m_wdgCnt == 1) {  // 开机后三秒跑马灯
+        	  deviceLEDOff();
+        	} else if (m_wdgCnt == 2) {
+        	  GSMLED_Off();
+        	} else if (m_wdgCnt == 3) {
+        	  NetLED_Off();
+        	} else if (m_wdgCnt > 3) {
+        	  m_wdgCnt = 4;
+        	}
+			break;
+		}
+
+		default:
+		break;
+		}	// switch
+	}	//while
+
+}
+
+
+
+/*
 void proc_app_task(s32 taskId)
 {
 	u32 timer = 0;  //unit 1s
@@ -63,7 +147,7 @@ void proc_app_task(s32 taskId)
 	log_init();
 	Key_init();
     Ql_Timer_Register(USER_TIMER_ID, UserTimer1scallback, &timer);
-	Ql_Timer_Start(USER_TIMER_ID, 500, TRUE);//*/
+	Ql_Timer_Start(USER_TIMER_ID, 500, TRUE);
 	SysPara_init();
 	// log_save("App statr run...\r\n");
 	Beep_init();
@@ -86,7 +170,7 @@ void proc_app_task(s32 taskId)
 				else
 				{
 					strCmp(buf, (void_fun_bufp)((void*)msg.param2));
-				}//*/
+				}
 				//Uart_write(buf->payload, buf->lenght);
 				//memory_release(buf->payload);
 				break;
@@ -123,12 +207,57 @@ void proc_app_task(s32 taskId)
 
 	}
 }
+*/
+
+/*******************************************************************************            
+* introduce:        
+* parameter:                       
+* return:                 
+* author:           Luee                                                    
+*******************************************************************************/
+static void UserTimerWDGcallback(void *param) 
+{
+  Ql_OS_SendMessage(APP_TASK, APP_MSG_WDG_ID, 0, 0,500);
+}
 
 /*******************************************************************************
  Brief    : void
  Parameter: 
  return   : 
 *******************************************************************************/
+static void UserTimerAPPscallback(void *param) 
+{
+	static u8_t timeCnt = 0;
+	//Ql_OS_SendMessage(APP_TASK, WDG_CMD_ID, 0, 0);
+	//Ql_OS_SendMessage(NET_TASK, timerId, 0, 0);
+
+	Ql_OS_SendMessage(APP_TASK, APP_MSG_TIMER_ID, 0, 0,500);
+    //Ql_OS_SendMessage(EYBOND_TASK, APP_MSG_DEVTIMER_ID, 0, 0,500);
+    //Ql_OS_SendMessage(COMMON_SERVER_TASK, APP_MSG_TIMER_ID, 0, 0,500);
+
+	if (timeCnt++ > 0)
+	{
+		u32 *p = param;
+		
+		(*p)++;
+		timeCnt = 0;
+		
+		//Ql_OS_SendMessage(APP_TASK, timerId, *p, 0);
+		//Ql_OS_SendMessage(EYBOND_TASK, timerId, *p, 0);
+		//Ql_OS_SendMessage(DEVICE_TASK, timerId, 0, 0);
+		//Ql_OS_SendMessage(COMMON_SERVER_TASK, timerId, 0, 0);
+		//Ql_OS_SendMessage(ANTI_REFLUX_TASK, timerId, 0, 0);
+		//Ql_OS_SendMessage(SARNATH_TASK, timerId, 0, 0);
+
+		//Ql_OS_SendMessage(EYBDEVICE_TASK, APP_MSG_DEVTIMER_ID, 0, 0,1000);
+      	//Ql_OS_SendMessage(UPDATE_TASK, APP_MSG_TIMER_ID, 0, 0,1000);
+      	//Ql_OS_SendMessage(ANTI_REFLUX_TASK, ANTI_REFLUX_TIMER_ID, 0, 0,1000);
+	}
+}
+
+
+
+/*
 static void UserTimer1scallback(u32 timerId, void* param)
 {
 	static u8_t timeCnt = 0;
@@ -150,12 +279,13 @@ static void UserTimer1scallback(u32 timerId, void* param)
 		Ql_OS_SendMessage(SARNATH_TASK, timerId, 0, 0);
 	}
 }
-
+*/
 /*******************************************************************************
  Brief    : void
  Parameter: 
  return   : 
 *******************************************************************************/
+/*
 static void strCmp(Buffer_t *strBuf, void_fun_bufp output)
 {
 	const char testServer[] = "solar.eybond.com";
@@ -306,12 +436,13 @@ static void strCmp(Buffer_t *strBuf, void_fun_bufp output)
 	memory_release(strBuf->payload);
 	strBuf->payload = null;
 }
-
+*/
 /*******************************************************************************
  Brief    : void
  Parameter: 
  return   : 
 *******************************************************************************/
+/*
 static void outputCh(Buffer_t *buf)
 {
 	if (outputFun != null && buf != null && buf->payload != null)
@@ -322,12 +453,13 @@ static void outputCh(Buffer_t *buf)
 		buf->payload = null;
 	}
 }
-
+*/
 /*******************************************************************************
  Brief    : void
  Parameter: 
  return   : 
 *******************************************************************************/
+/*
 static void UanrtCh(DeviceAck_e e)
 {
 	if (e == DEVICE_ACK_FINISH)
@@ -337,12 +469,13 @@ static void UanrtCh(DeviceAck_e e)
 	}
     deviceLockTime += 10;
 }
-
+*/
 /*******************************************************************************
  Brief    : void
  Parameter: 
  return   : 
 *******************************************************************************/
+/*
 static int logGet(Buffer_t *buf)
 {
 	int ret;
@@ -374,7 +507,7 @@ static int logGet(Buffer_t *buf)
 
 	return 0;
 }
-
+*/
 
 /*********************************FILE END*************************************/
 

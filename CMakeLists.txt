@@ -147,6 +147,8 @@ set(CUSTOMER_ID 000)
     user/public/data_collector_parameter_table.c
     user/public/parameter_number_and_value.c
     #user/public/history.c
+    user/public/appTask.c
+    user/public/Status.c
     user/ble/ble_task.c
     )   
 

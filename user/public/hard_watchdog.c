@@ -31,6 +31,17 @@ void Watchdog_init(void) {
  return   : 
 *******************************************************************************/
 void Watchdog_feed(void) {
+  static u8 wdt_index=0;
+  if (FeedFlag == 0) {
+    s32_t ret = 0;
+    if((wdt_index++)&1)
+      ret = fibo_gpio_set(WATCHDOG_PIN,PINLEVEL_LOW);
+    else
+	    ret = fibo_gpio_set(WATCHDOG_PIN,PINLEVEL_HIGH);
+  }
+}
+
+void Watchdog_feed_delay(void) {
   if (FeedFlag == 0) {
     s32_t ret = 0;
     ret = fibo_gpio_set(WATCHDOG_PIN,PINLEVEL_LOW);
@@ -66,7 +77,7 @@ void watchdogns(u8 ns)
 {
 	for (int n = 0; n < ns; n++){
         fibo_taskSleep(500);
-        Watchdog_feed();
+        Watchdog_feed_delay();
         fibo_watchdog_feed();
     }
 }
