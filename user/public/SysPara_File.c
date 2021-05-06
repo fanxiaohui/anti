@@ -1,9 +1,9 @@
-/********************** COPYRIGHT 2014-2100, eybond ***************************
- * @File    : parameter_number_and_value.c
- * @Author  :
- * @Date    : 2020-08-20
- * @Brief   :
- ******************************************************************************/
+/******************************************************************************           
+* name:                       
+* introduce:        
+* author:           Luee                                     
+******************************************************************************/ 
+//标注有 "Luee 之后再加入",需要后面重新加入
 //sdk
 #include <fibo_opencpu.h>
 #include <stdio.h>
@@ -28,7 +28,6 @@
 #include "SysPara_File.h"
 #include "hard_watchdog.h"
 #include "grid_tool.h"
-
 #include "DeviceIO.h"
 #include "Device.h"
 #include "Protocol.h"
@@ -36,30 +35,6 @@
 #include "CommonServer.h"
 #include "ModbusDevice.h"
 
-/*
-
-
-#include "DeviceIO.h"
-#include "Device.h"
-#include "Protocol.h"
-#include "eybond.h"
-#include "CommonServer.h"
-
-#include "grid_tool.h"
-#include "ModbusDevice.h"
-
-#include "ieee754_float.h"
-#include "char2negative.h"
-
-
-#ifdef _PLATFORM_BC25_
-#include "NB_net.h"
-#endif
-#ifdef _PLATFORM_L610_
-#include "4G_net.h"
-#endif
-
-*/
 
 static u8_t Para_Init_flag = 0;
 char produc_save_flag = 0;
@@ -295,7 +270,7 @@ u8_t parametr_set(u32_t number, Buffer_t *data) {
               //log_save("System Para Reset!");
               //parametr_default();
               //设备重置
-              Eybpub_UT_SendMessage(EYBDEVICE_TASK, SYS_PARA_CHANGE, number, 0,0);
+              //Eybpub_UT_SendMessage(EYBDEVICE_TASK, SYS_PARA_CHANGE, number, 0,0);  //Luee 之后再加入
               break;
             case '3':   //软重启
               fibo_softReset();
@@ -428,9 +403,9 @@ u8_t parametr_set(u32_t number, Buffer_t *data) {
     }
     parameter_init();  // 保持统一
     if (number == DEVICE_MONITOR_NUM || number == DEVICE_PROTOCOL || number == DEVICE_UART_SETTING) {
-      Eybpub_UT_SendMessage(EYBDEVICE_TASK, SYS_PARA_CHANGE, number, 0,0);
+      //Eybpub_UT_SendMessage(EYBDEVICE_TASK, SYS_PARA_CHANGE, number, 0,0);  //Luee  之后再加入
     } else if (number == DEVICE_PNID || number == EYBOND_SERVER_ADDR) {
-      Eybpub_UT_SendMessage(EYBNET_TASK, NET_CMD_RESTART_ID, 0, 0,0);    // 或者NET_CMD_RESTART_ID
+      //Eybpub_UT_SendMessage(EYBNET_TASK, NET_CMD_RESTART_ID, 0, 0,0);       //Luee  之后再加入
     }
   }
   return ret ;

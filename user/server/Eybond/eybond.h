@@ -1,12 +1,12 @@
-/**************Copyright(C)��2015-2026��Shenzhen Eybond Co., Ltd.***************
-  *@brief   : Eybodnƽ̨��غ���
-  *@notes   : 2017.12.09 CGQ ����   
+/**************Copyright(C)锟斤拷2015-2026锟斤拷Shenzhen Eybond Co., Ltd.***************
+  *@brief   : Eybodn平台锟斤拷睾锟斤拷锟�
+  *@notes   : 2017.12.09 CGQ 锟斤拷锟斤拷   
 *******************************************************************************/
 #ifndef __EYBOND_H
 #define __EYBOND_H	 
 
 #include "typedef.h"
-#include "ql_type.h"
+//#include "ql_type.h"
 
 #define EYBOND_TASK		subtask3_id
 #define EYBOND_DATA_PROCESS  (0x010001)

@@ -24,6 +24,7 @@
 #include "appTask.h"
 #include "utility.h"
 #include "Status.h"
+#include "SysPara_File.h"
 
 
 /*
@@ -84,11 +85,24 @@ void proc_app_task(s32 taskId)
 	u32 WDG_timer=0;	//1s
 	ST_MSG msg;
 	Buffer_t *buf;	
+	u32 err=0;
 	
 	outputFun = null;
 	logGetFlag = 0;
 
 	log_init();
+
+	// 系统参数初始化
+  	if(SysPara_init() != 0) {
+    	// 参数初始化失败
+    	while(1) {
+    	  if (++err > 10) {
+    	    fibo_softReset();
+    	    err = 0;
+    	  }
+    	  fibo_taskSleep(1000);
+    	}
+  	}
 
 	APP_timer = fibo_timer_period_new(APP_time_Interval, UserTimerAPPscallback, &m_timeCnt);    
     if (APP_timer == 0) {

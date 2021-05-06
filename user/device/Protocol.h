@@ -6,8 +6,8 @@
 #define __DEVICE_RPOTOCOL_H
 
 #include "typedef.h"
-#include "modbus.h"
-#include "ql_uart.h"
+#include "Modbus.h"
+//#include "ql_uart.h"
 
 #define  PROTOCOL_TABER(tab, flag, code)        {sizeof(tab)/sizeof(tab[0]), flag, code,  (ModbusGetCmd_t*)tab}
 #define  CONVERT_TYPE                           const ModbusGetCmdTab_t**

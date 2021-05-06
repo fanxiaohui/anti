@@ -7,7 +7,7 @@
 #include "list.h"
 #include "DeviceIO.h"
 
-#define DEVICE_LED		(PINNAME_RI)
+//#define DEVICE_LED		(PINNAME_RI)
 
 #define DEVICE_ACK_SIZE (0x400)   //device default data ack data rcveice buffer size
 #define DEVICE_CMD_ID			(0x0F8000)

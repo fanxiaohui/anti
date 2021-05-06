@@ -6,10 +6,10 @@
 #define __MODBUS_DEVICE_H
 
 #include "typedef.h"
-#include "modbus.h"
-#include "device.h"
+#include "Modbus.h"
+#include "Device.h"
 #include "Protocol.h"
-#include "ql_uart.h"
+//#include "ql_uart.h"
 #include "list.h"
 
 #define DEVICE_TAB_FLAG         (0x5A5A55AA)

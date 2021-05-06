@@ -43,7 +43,7 @@ include_directories(user/net)
 include_directories(user/public)
 include_directories(user/server)
 include_directories(user/server/CommonServer)
-include_directories(user/server/eybond)
+include_directories(user/server/Eybond)
 include_directories(user/server/StatcGrid)
 include_directories(user/ble)
 
@@ -146,6 +146,7 @@ set(CUSTOMER_ID 000)
     user/public/grid_tool.c
     user/public/data_collector_parameter_table.c
     user/public/parameter_number_and_value.c
+    user/public/SysPara_File.c
     #user/public/history.c
     user/public/appTask.c
     user/public/Status.c
