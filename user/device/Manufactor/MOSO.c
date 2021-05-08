@@ -2,11 +2,12 @@
   *@brief   : moso.c
   *@notes   : 2017.12.26 CGQ   
 *******************************************************************************/
-#include "Protocol.h"
 #include "typedef.h"
-#include "SysPara.h"
-#include "memory.h"
+#include "r_memory.h"
 #include "r_stdlib.h"
+#include "SysPara_File.h"
+
+#include "Protocol.h"
 #include "Device.h"
 
 static const ModbusGetCmd_t moso50k_1[] = {
@@ -66,8 +67,6 @@ static const ModbusGetCmd_t proCmdTab[] = {
     {03,  0x00,  4},
 };
 
-
-
 static const ModbusGetCmdTab_t protocolCmd = PROTOCOL_TABER(proCmdTab, 0, 0);
 static const ModbusGetCmdTab_t moso50kProtocol = PROTOCOL_TABER(moso50k, 0, 0x0212);
 static const ModbusGetCmdTab_t moso1kProtocol = PROTOCOL_TABER(moso1k, 0, 0x0210);
@@ -76,7 +75,6 @@ static const ModbusGetCmdTab_t moso50k_1Protocol = PROTOCOL_TABER(moso50k_1, 0, 
 static const ModbusGetCmdTab_t mosoBatterProtocol = PROTOCOL_TABER(mosoBatter, 1, 0x0803);
 
 static u8_t protocolCheck(void *load, void *optPoint);
-
 
 const ModbusDeviceHead_t MOSODevice = {
     &UART_9600_N1,
@@ -115,8 +113,10 @@ static u8_t protocolCheck(void *load, void *optPoint)
 			case 0:
                 if (cmd->cmd.payload[1] == 4)
                 {
-                    SysPara_Get(3, &buf);
-                    if (r_strfind("87", (char*)buf.payload) >= 0)
+//                    SysPara_Get(3, &buf);
+                    parametr_get(3, &buf);
+//                    if (r_strfind("87", (char*)buf.payload) >= 0) // mike 20200828
+                    if (r_strstr((char*)buf.payload, "87") != NULL)
                     {
                         *((CONVERT_TYPE)optPoint) = &moso50k_1Protocol;//&moso3kProtocol;//
                     }
@@ -125,6 +125,8 @@ static u8_t protocolCheck(void *load, void *optPoint)
                         *((CONVERT_TYPE)optPoint) = &moso50kProtocol;
                     }
                     memory_release(buf.payload);
+                    buf.size = 0;
+                    buf.lenght = 0;
                 }
 				return 0;
 			case 0x12:

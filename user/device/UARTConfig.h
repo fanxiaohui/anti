@@ -7,6 +7,7 @@
 #include "typedef.h"
 
 #include "oc_uart.h"
+#include "UARTConfig.h"
 typedef enum {
     FC_NONE=1,  // None Flow Control
     FC_HW,      // Hardware Flow Control 

@@ -132,8 +132,7 @@ extern const ModbusDeviceHead_t _027CDevice;
 extern const ModbusDeviceHead_t _027DDevice;
 extern const ModbusDeviceHead_t _027EDevice;
 extern const ModbusDeviceHead_t _027FDevice;
-extern const ModbusDeviceHead_t _02A5Device;
-extern const ModbusDeviceHead_t _02A6Device;
+
 extern const ModbusDeviceHead_t Eybond4Device;
 extern const ModbusDeviceHead_t ChlykjDevice;
 extern const ModbusDeviceHead_t Ha0403Device;
@@ -170,7 +169,6 @@ extern const ModbusDeviceHead_t _051BDevice ;
 
 extern const ModbusDeviceHead_t _0707Device;
 extern const ModbusDeviceHead_t _0708Device;
-extern const ModbusDeviceHead_t _0721Device;
 
 extern const ModbusDeviceHead_t _0804Device;
 
@@ -182,11 +180,9 @@ extern const ModbusDeviceHead_t NicestDevice;
 extern const ModbusDeviceHead_t VoltronicDevice2;
 extern const ModbusDeviceHead_t VoltronicDevice3;
 extern const ModbusDeviceHead_t KelongDevice;
-extern const ModbusDeviceHead_t _0911Device;
 extern const ModbusDeviceHead_t _0919Device;
 extern const ModbusDeviceHead_t _091BDevice;
-extern const ModbusDeviceHead_t _090BDevice;
-extern const ModbusDeviceHead_t _090CDevice;
+
 extern const ModbusDeviceHead_t _090FDevice;
 extern const ModbusDeviceHead_t CanroonDevice;
 extern const ModbusDeviceHead_t ChuangChiDevice;
@@ -212,26 +208,16 @@ extern const ModbusDeviceHead_t _0941Device;
 extern const ModbusDeviceHead_t _0942Device;
 extern const ModbusDeviceHead_t _0944Device;
 extern const ModbusDeviceHead_t _0945Device;
-extern const ModbusDeviceHead_t _0948Device;
 extern const ModbusDeviceHead_t _094EDevice;
 extern const ModbusDeviceHead_t _094FDevice;
-extern const ModbusDeviceHead_t _0958Device;
-extern const ModbusDeviceHead_t _0959Device;
 extern const ModbusDeviceHead_t _0965Device;
 extern const ModbusDeviceHead_t _0971Device;
-extern const ModbusDeviceHead_t _0973Device;
-extern const ModbusDeviceHead_t _0975Device;
 extern const ModbusDeviceHead_t _0204Device;
 extern const ModbusDeviceHead_t _0E01Device;
 extern const ModbusDeviceHead_t _0E0EDevice;
 extern const ModbusDeviceHead_t _025FDevice;
 extern const ModbusDeviceHead_t _02DCDevice;
-extern const ModbusDeviceHead_t _02D4Device;
-extern const ModbusDeviceHead_t _1201Device;
-extern const ModbusDeviceHead_t _1203Device;
-extern const ModbusDeviceHead_t _1205Device;
-extern const ModbusDeviceHead_t _1208Device;
-extern const ModbusDeviceHead_t _1209Device;
+extern const ModbusDeviceHead_t _1001Device;
 
 #endif //__COMMON_H end
 /******************************************************************************/

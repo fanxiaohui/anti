@@ -5,10 +5,9 @@
 #ifndef __SINENG_H
 #define __SINENG_H
 
-
 #include "Protocol.h"
 #include "DeviceIO.h"
-#include "List.h"
+#include "list.h"
 
 typedef struct
 {
@@ -29,11 +28,10 @@ typedef struct
 
 typedef struct 
 {
-	u32_t addr;		//�ڴ��ַ
-	u16_t size; 	//�ڴ��С
-	u16_t user; 	//��Ч�ռ�
+	u32_t addr;		//
+	u16_t size; 	//
+	u16_t user; 	//
 }SinengPVRAM_t;
-
 
 typedef struct
 {
@@ -65,7 +63,6 @@ extern const ModbusDeviceHead_t SinengDevice;
 void Sineng_PVData(u8_t addr, u8_t state, u16_t *code, Buffer_t *ack);
 void PV_Scan(void);
 void PV_dataGet(void);
-
 
 #endif //__SINENG_H end
 /******************************************************************************/

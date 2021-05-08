@@ -16,6 +16,7 @@
 #include "appTask.h"
 #include "ble_task.h"
 #include "utility.h"
+#include "eybond.h"
 
 UINT32 APP_TASK = 0;
 UINT32 NET_TASK = 0;
@@ -161,6 +162,8 @@ void *appimg_enter(void *param)
     BLE_TASK = fibo_queue_create(10, sizeof(ST_MSG));
 
     fibo_thread_create(proc_app_task, "app_task", 1024 * 8, NULL, OSI_PRIORITY_NORMAL);
+    //fibo_thread_create_ex(proc_eybond_task,       "Eybond CMD TASK",     1024*8*7, NULL, OSI_PRIORITY_LOW,      &eyb_thread_id);
+    
     //fibo_thread_create(prvThreadEntry, "mythread", 1024 * 4, NULL, OSI_PRIORITY_NORMAL);
     fibo_thread_create(ble_task, "ble_task", 1024 * 8, NULL, OSI_PRIORITY_NORMAL);
     //fibo_thread_create(fibo_ble_task, "fibo_ble_task", 1024*4, NULL, OSI_PRIORITY_NORMAL);

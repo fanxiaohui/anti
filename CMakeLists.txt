@@ -37,14 +37,14 @@ ADD_DEFINITIONS(-D_PLATFORM_L610_)
 include_directories(components/include components/newlib/include)
 include_directories(user/Lib)
 include_directories(user/device)
-include_directories(user/devuce/Manufactor)
+include_directories(user/device/Manufactor)
 include_directories(user/fota)
 include_directories(user/net)
 include_directories(user/public)
 include_directories(user/server)
 include_directories(user/server/CommonServer)
 include_directories(user/server/Eybond)
-include_directories(user/server/StatcGrid)
+include_directories(user/server/StateGrid)
 include_directories(user/ble)
 
 function(cpp_only target file)
@@ -135,10 +135,11 @@ set(CUSTOMER_ID 000)
     file(GLOB MAIN_FILES user/main/*.c) 
     file(GLOB LIB_FILES user/Lib/*.c)
     file(GLOB DEVICE_FILES user/device/*.c)
-    file(GLOB MANUFACTOR_FILES user/device/manufactor/*.c)
+    file(GLOB MANUFACTOR_FILES user/device/Manufactor/*.c)
     add_appimg(${target} ${flash_ldscript}
     ${MAIN_FILES}
     ${LIB_FILES}
+    ${MANUFACTOR_FILES}
     user/public/Debug.c
     user/public/hard_watchdog.c
     user/public/utility.c
@@ -151,6 +152,8 @@ set(CUSTOMER_ID 000)
     user/public/appTask.c
     user/public/Status.c
     user/ble/ble_task.c
+    user/server/Eybond/eybond.c
+    #user/device/Manufactor/Sineng.c
     )   
 
     target_link_libraries(${target} PRIVATE ${libc_file_name} ${libm_file_name} ${libgcc_file_name})

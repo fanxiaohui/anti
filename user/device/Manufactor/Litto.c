@@ -2,10 +2,10 @@
   *@brief   : litto.c
   *@notes   : 2017.12.29 CGQ   
 *******************************************************************************/
-#include "Protocol.h"
 #include "typedef.h"
-#include "Modbus.h"
 #include "r_stdlib.h"
+#include "Protocol.h"
+#include "Modbus.h"
 #include "Device.h"
 
 static u8_t commandCheck(void *load, void *optPoint);

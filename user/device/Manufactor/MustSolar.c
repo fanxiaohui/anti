@@ -120,7 +120,7 @@ static u8_t protocol3Check(void *load, void *optPoint)
 	if (ret == 0)
 	{
 		u16_t type = (cmd->ack.payload[3]<<8)|(cmd->ack.payload[4]);
-		type /= 100;
+		type /= 1000;
 		type %= 10;
 		if (type < 5)
 		{

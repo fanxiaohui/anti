@@ -8,6 +8,7 @@
 #include "typedef.h"
 #include "Modbus.h"
 //#include "ql_uart.h"
+#include "UARTConfig.h"
 
 #define  PROTOCOL_TABER(tab, flag, code)        {sizeof(tab)/sizeof(tab[0]), flag, code,  (ModbusGetCmd_t*)tab}
 #define  CONVERT_TYPE                           const ModbusGetCmdTab_t**

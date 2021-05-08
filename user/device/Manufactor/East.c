@@ -2,8 +2,11 @@
   *@brief   : East.c
   *@notes   : 2018.04.12 CGQ   
 *******************************************************************************/
-#include "Protocol.h"
 #include "typedef.h"
+#include "Swap.h"
+#include "r_stdlib.h"
+
+#include "Protocol.h"
 #include "Modbus.h"
 #include "Device.h"
 
@@ -96,7 +99,7 @@ static u8_t protocolCheck(void *load, void *optPoint)
 				}
 				else
 				{
-					if (r_strfind("LPV", (char*)&cmd->ack.payload[3]) > 0)
+                    if (r_strstr((char*)&cmd->ack.payload[3], "LPV") != NULL)
 					{
 						*((CONVERT_TYPE)optPoint) = &east5kProtocol;
 					}

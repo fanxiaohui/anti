@@ -4,8 +4,7 @@
 *******************************************************************************/
 #include "Protocol.h"
 #include "typedef.h"
-#include "SysPara.h"
-#include "memory.h"
+#include "r_memory.h"
 #include "r_stdlib.h"
 #include "Device.h"
 
@@ -62,8 +61,8 @@ static u8_t protocolCheck(void *load, void *optPoint)
 	ret = Modbus_CmdCheck(&cmd->cmd, &cmd->ack);
 	if (ret == 0)
 	{
-        Buffer_t buf;
-        u16_t val;
+//        Buffer_t buf;     // mike 20200914
+//        u16_t val;
 		switch (cmd->cmd.payload[3])
 		{
 			case 0x30:

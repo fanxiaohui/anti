@@ -1,4 +1,4 @@
-/**************Copyright(C)��2015-2026��Shenzhen Eybond Co., Ltd.***************
+/**************Copyright(C)锟斤拷2015-2026锟斤拷Shenzhen Eybond Co., Ltd.***************
   *@brief   : eybond soft update process
   *@notes   : 2017.09.11 CGQ 
 *******************************************************************************/
@@ -6,7 +6,7 @@
 #define __ESP_UPDATE_H	 
 
 #include "typedef.h" 
-#include "Eybond.h"
+#include "eybond.h"
 
 
 typedef struct

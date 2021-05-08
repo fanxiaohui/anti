@@ -2,27 +2,28 @@
   *@brief   : sineng.c
   *@notes   : 2017.12.29 CGQ   
 *******************************************************************************/
-#include "Protocol.h"
+#ifdef _PLATFORM_L610_
+#include "fibo_opencpu.h"
+#endif
+
 #include "typedef.h"
-#include "swap.h"
-#include "r_stdlib.h"
-#include "log.h"
-#include "DeviceIO.h"
+#include "Swap.h"
 #include "list.h"
-#include "memory.h"
-#include "sineng.h"
-#include "Ql_system.h"
+#include "r_stdlib.h"
+#include "r_memory.h"
+#include "run_log.h"
+#include "utility.h"
+
+#include "Protocol.h"
+#include "DeviceIO.h"
 #include "Device.h"
-#include "sineng.h"
-#include "modbus.h"
+#include "Sineng.h"
+#include "Modbus.h"
 #define SINENG_DEVICE_FLAG			(0x55AA)
 
 static u16_t sinengDevice;
 static const SinengPV_t *pvCmd;
 static SinengPVScan_t *PVScan;
-
-
-
 
 u16_t dataGetCmd[5] = {0xABCD, 1,}; 
 u16_t _3_5KStartCmd[] = {0x0100};
@@ -60,7 +61,6 @@ static const SinengPV_t PV_EFMppt = {
 	3,
 	(u16_t*)_EFMpptPassword
 };
-
 
 static const ModbusGetCmd_t APF[] = {
     {0x03, 8000, 8025},
@@ -157,7 +157,7 @@ const ModbusDeviceHead_t SinengDevice = {
 *******************************************************************************/
 static u8_t protocolCheck(void *load, void *optPoint)
 {
-	int ret;
+	int ret = 0;
 	DeviceCmd_t *cmd;
 
 	cmd = (DeviceCmd_t*)load;
@@ -167,46 +167,51 @@ static u8_t protocolCheck(void *load, void *optPoint)
 		char *str = (char*)&cmd->ack.payload[3];
 		cmd->ack.payload[cmd->ack.lenght - 1] = '\0';
 		if ((cmd->cmd.payload[2]<<8 | cmd->cmd.payload[3]) == 8000)
-		{
-			
+		{	
 			sinengDevice = 0;
 			pvCmd = null;
 			PVScan = null;
-			if (r_strfind("FPU-", str) >= 0)
+//			if (r_strfind("FPU-", str) >= 0)            // mike 20200828
+            if (r_strstr(str, "FPU-") != NULL)
 			{
 				*((CONVERT_TYPE)optPoint) = &sinengAPF;
 			}
-			else if (r_strfind("EP-0500-A", str) >= 0 || r_strfind("EP-0630-A", str) >= 0)
+//			else if (r_strfind("EP-0500-A", str) >= 0 || r_strfind("EP-0630-A", str) >= 0)
+            else if (r_strstr(str, "EP-0500-A") != NULL || r_strstr(str, "EP-0630-A") != NULL)
 			{
 				*((CONVERT_TYPE)optPoint) = &sinengEPCP;
 			}
-			else if (r_strfind("EF-MPPT", str) >= 0)
+//			else if (r_strfind("EF-MPPT", str) >= 0)
+            else if (r_strstr(str, "EF-MPPT") != NULL)
 			{
 				*((CONVERT_TYPE)optPoint) = &sinengEFMppt;
 				pvCmd = &PV_EFMppt;
 				sinengDevice = SINENG_DEVICE_FLAG;
 			}
-			else if ((r_strfind("SP-5K", str) >= 0)
-					|| (r_strfind("SP-3K", str) >= 0)
-				)
+//			else if ((r_strfind("SP-5K", str) >= 0) || (r_strfind("SP-3K", str) >= 0))
+            else if ((r_strstr(str, "SP-5K") != NULL) || (r_strstr(str, "SP-3K") != NULL))
 			{
 				*((CONVERT_TYPE)optPoint) = &sineng3_5K;
 				pvCmd = &PV_3_5k;
 				sinengDevice = SINENG_DEVICE_FLAG;
 			}
-			else if (r_strfind("SP-20K", str) >= 0)
+//			else if (r_strfind("SP-20K", str) >= 0)
+            else if (r_strstr(str, "SP-20K") != NULL)
 			{
 				*((CONVERT_TYPE)optPoint) = &sineng20K;
 			}
-            else if (r_strfind("SP-50K-L", str) >= 0)
+//          else if (r_strfind("SP-50K-L", str) >= 0)
+            else if (r_strstr(str, "SP-50K-L") != NULL)
             {
-                    *((CONVERT_TYPE)optPoint) = &sineng50K_L;
+                *((CONVERT_TYPE)optPoint) = &sineng50K_L;
             }
-			else if (r_strfind("SP-50K", str) >= 0)
+//			else if (r_strfind("SP-50K", str) >= 0)
+            else if (r_strstr(str, "SP-50K") != NULL)
 			{
 				*((CONVERT_TYPE)optPoint) = &sineng50K;
 			}
-			else if (r_strfind("SP-60K", str) >= 0)
+//			else if (r_strfind("SP-60K", str) >= 0)
+            else if (r_strstr(str, "SP-60K") != NULL)
 			{
 				*((CONVERT_TYPE)optPoint) = &sineng60K_L;
 			}
@@ -214,7 +219,6 @@ static u8_t protocolCheck(void *load, void *optPoint)
 			{
 				log_save("Sineng protocol find fail: ");
 				log_save(str);
-				
 				return 1;
 			}
 			
@@ -222,7 +226,8 @@ static u8_t protocolCheck(void *load, void *optPoint)
 		}
 		else
 		{
-			if (r_strfind("SP-50K", str) >= 0)
+//			if (r_strfind("SP-50K", str) >= 0)
+            if (r_strstr(str, "SP-50K") != NULL)
 			{
 				*((CONVERT_TYPE)optPoint) = &sineng50K;
 				return 0; 
@@ -235,7 +240,6 @@ static u8_t protocolCheck(void *load, void *optPoint)
 	return 1;
 }
 
-
 static int PV_scanReady(u8_t addr);
 static void PV_scanEnd(void);
 static void startAck(DeviceAck_e e);
@@ -244,7 +248,6 @@ static void RAMAddrAck(DeviceAck_e e);
 static void RAMDataAck(DeviceAck_e e);
 static void password(void);
 static void passwordAck(DeviceAck_e e); 
-
 
 /*******************************************************************************
   * @brief	
@@ -307,8 +310,8 @@ void Sineng_PVData(u8_t addr, u8_t state, u16_t *code, Buffer_t *ack)
 				}
 				else
 				{
-					int i;
-					u8_t *p;
+					int i = 0;
+					u8_t *p = NULL;
 
 					ack->size = PVScan->buf.lenght + (PVScan->buf.lenght/PVScan->pointSize)*4 + 4;
 					memory_release(ack->payload);
@@ -338,13 +341,18 @@ void Sineng_PVData(u8_t addr, u8_t state, u16_t *code, Buffer_t *ack)
 	                if (PVScan->upPointCount >= pvCmd->pointCount)
 	                {
 	                    PV_scanEnd();
-	                    log_save("PV Scan complete!\r\n");
+	                    log_save("PV Scan complete!");
 	                }
 					else
 					{
 						PVScan->buf.lenght = 0;
 						PVScan->state = PV_RAM_DATA_WAIT;
-						Ql_OS_SendMessage(DEVICE_TASK, DEVICE_PV_GET_ID, 0, 0);
+#ifdef _PLATFORM_BC25_
+						Ql_OS_SendMessage(EYBDEVICE_TASK, DEVICE_PV_GET_ID, 0, 0);
+#endif
+#ifdef _PLATFORM_L610_
+                        Ql_OS_SendMessage(DEVICE_TASK, DEVICE_PV_GET_ID, 0, 0,0);
+#endif
 					}
 	            }
 			}
@@ -368,11 +376,10 @@ void Sineng_PVData(u8_t addr, u8_t state, u16_t *code, Buffer_t *ack)
 *******************************************************************************/
 static u8_t cmdClear(void *payload, void *point)
 {
-	DeviceCmd_t * cmd = (DeviceCmd_t*)payload;
-	
-	memory_release(cmd->ack.payload);
-	memory_release(cmd->cmd.payload);
-    return 1;
+  DeviceCmd_t * cmd = (DeviceCmd_t*)payload;
+  memory_release(cmd->ack.payload);
+  memory_release(cmd->cmd.payload);
+  return 1;
 }
 static void ListCmdclear(void)
 {
@@ -391,7 +398,7 @@ static void ListCmdclear(void)
 static int PV_scanReady(u8_t addr)
 { 
 	PVScan = memory_apply(sizeof(SinengPVScan_t));
-	
+
 	if (pvCmd != null && PVScan != null)
 	{
 		DeviceCmd_t *cmd;
@@ -408,7 +415,12 @@ static int PV_scanReady(u8_t addr)
 			PVScan->deviceHead.callback = startAck;
 			PVScan->deviceHead.waitTime = 2000;
 			DeviceIO_lock(&PVScan->deviceHead);
-			Ql_OS_SendMessage(DEVICE_TASK, DEVICE_PV_SCAN_ID, 0, 0);
+#ifdef _PLATFORM_BC25_
+            Ql_OS_SendMessage(EYBDEVICE_TASK, DEVICE_PV_SCAN_ID, 0, 0);
+#endif
+#ifdef _PLATFORM_L610_
+            Ql_OS_SendMessage(DEVICE_TASK, DEVICE_PV_SCAN_ID, 0, 0,0);
+#endif            
 			return 0;
 		}	
 	}
@@ -445,7 +457,12 @@ void PV_Scan(void)
 		int	ret = DeviceIO_write(&PVScan->deviceHead, cmd->cmd.payload, cmd->cmd.lenght);
 		if (ret != 0)
 		{
-			Ql_OS_SendMessage(DEVICE_TASK, DEVICE_PV_SCAN_ID, 0, 0);
+#ifdef _PLATFORM_BC25_
+		    Ql_OS_SendMessage(EYBDEVICE_TASK, DEVICE_PV_SCAN_ID, 0, 0);
+#endif
+#ifdef _PLATFORM_L610_
+            Ql_OS_SendMessage(DEVICE_TASK, DEVICE_PV_SCAN_ID, 0, 0,0);
+#endif            
 		}	
 	}
 	else
@@ -538,7 +555,7 @@ static void RAMAddrAck(DeviceAck_e e)
 		&& (0 == (i = Modbus_CmdCheck(&cmd->cmd, &cmd->ack)))
 		)
 	{
-		r_memcpy(&PVScan->RAM, &cmd->ack.payload[3], sizeof(PVScan->RAM));  
+        r_memcpy(&PVScan->RAM, &cmd->ack.payload[3], sizeof(PVScan->RAM));  
 		PVScan->RAM.addr = ENDIAN_BIG_LITTLE_32(PVScan->RAM.addr);
 		PVScan->RAM.size = ENDIAN_BIG_LITTLE_16(PVScan->RAM.size);
 		PVScan->RAM.user = ENDIAN_BIG_LITTLE_16(PVScan->RAM.user);
@@ -615,15 +632,12 @@ void PV_dataGet(void)
 static void RAMDataAck(DeviceAck_e e)
 {
 	DeviceCmd_t *cmd;
-	int i = 0;
+	int i =0, j = 0;    // mike 20200914
 
 	cmd = list_nextData(&PVScan->cmdList, null);
-	if ((e == DEVICE_ACK_FINISH) 
-		&& (cmd != null)
-		&& (0 == (i = Modbus_CmdCheck(&cmd->cmd, &cmd->ack)))
-		)
-	{
-		int i = PVScan->buf.size - PVScan->buf.lenght;
+    j = Modbus_CmdCheck(&cmd->cmd, &cmd->ack);
+	if ((e == DEVICE_ACK_FINISH) && (cmd != null) && (0 == j)) {
+		i = PVScan->buf.size - PVScan->buf.lenght;
 
 		cmd->cmd.lenght -= 5;
 		
@@ -631,7 +645,7 @@ static void RAMDataAck(DeviceAck_e e)
 		
 		PVScan->RAM.addr += i/2;
 		PVScan->RAM.size -= i/2;
-		r_memcpy((&PVScan->buf.payload[PVScan->buf.lenght]), &cmd->ack.payload[2], i);
+        r_memcpy((&PVScan->buf.payload[PVScan->buf.lenght]), &cmd->ack.payload[2], i);
 		PVScan->buf.lenght += i;
  
 		if (PVScan->buf.lenght == PVScan->buf.size || PVScan->RAM.size == 0)
@@ -646,7 +660,7 @@ static void RAMDataAck(DeviceAck_e e)
 			PV_dataGet();
 		}
 	}
-	else if (i > 0)
+	else if (j > 0)
 	{
 		password();
 	}
@@ -708,7 +722,7 @@ static void passwordAck(DeviceAck_e e)
 	}
 	else if (i > 0)
 	{
-		log_save("PV password error!!\r\n");
+		log_save("PV password error!!");
 	}
 	else if (++PVScan->tryCnt > 3)
 	{

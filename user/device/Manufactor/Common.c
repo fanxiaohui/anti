@@ -1,4 +1,4 @@
-/**************Copyright(C)锟�?2015-2026锛孲henzhen Eybond Co., Ltd.***************
+/**************Copyright(C)閿涳拷2015-2026閿涘henzhen Eybond Co., Ltd.***************
   *@brief   : Common.c
   *@notes   : 2017.12.26 CGQ   
 *******************************************************************************/
@@ -69,6 +69,24 @@ const ModbusDeviceHead_t _0206Device = {
     null,
     null,
 };
+
+/* static const ModbusGetCmd_t _0206[] = {
+    {04,   2999, 3012},
+    {04,   3013, 3025},
+    {04,   3026, 3038},
+    {04,   3039, 3051},
+    {04,   3052, 3064},
+    {04,   3065, 3077},
+};
+
+static const ModbusGetCmdTab_t _0206Protocol = PROTOCOL_TABER(_0206, 0, 0x0206);
+const ModbusDeviceHead_t _0206Device = {
+    &UART_9600_N1,
+    &_0206[0],
+    &_0206Protocol,
+    null,
+    null,
+}; */
 
 static const ModbusGetCmd_t _0214[] = {
     {04,   30000,  30040},
@@ -864,13 +882,17 @@ const ModbusDeviceHead_t _0B01Device = {
     null,
 };
 
-static const ModbusGetCmd_t _0407[] = {
+static const ModbusGetCmd_t _0407[] = {         // mike 閺佺増宓佺搾濠勬櫕娴滐拷
     {04,   40021,  40022},
     {04,   40029,  40030},
-	{04,   463745,  463746},
-    {04,   463761,  463762},
-	{04,   463777,  463778},
-    {04,   463793,  463794},
+//	{04,   463745,  463746},    // mike 淇瓒婄晫闂 20201222
+//  {04,   463761,  463762},
+//	{04,   463777,  463778},
+//  {04,   463793,  463794},
+    {04,   4993,   4994},
+    {04,   5009,   5010},
+    {04,   5025,   5026},
+    {04,   5041,   5042},
     {03,   30001,  30007},
 	{03,   30013,  30019},
 	{03,   30025,  30031},
@@ -1162,35 +1184,6 @@ const ModbusDeviceHead_t _028FDevice = {
     null,
 };
 
-static const ModbusGetCmd_t _02A5[] = {
-    {0x03, 1000 ,1001},
-    {0x03, 1017 ,1031},
-    {0x03, 1000 ,1049},
-};
-static const ModbusGetCmdTab_t _02A5Protocol = PROTOCOL_TABER(_02A5, 0, 0x02A5);
-const ModbusDeviceHead_t _02A5Device = {
-    &UART_9600_N1,
-    &_02A5[0],
-    &_02A5Protocol,
-    null,
-    null,
-};
-
-static const ModbusGetCmd_t _02A6[] = {
-    {0x03, 5001 ,5020},
-    {0x03, 5031 ,5046},
-    {0x03, 4001 ,4029},
-    {0x03, 4034 ,4070},
-};
-static const ModbusGetCmdTab_t _02A6Protocol = PROTOCOL_TABER(_02A6, 0, 0x02A6);
-const ModbusDeviceHead_t _02A6Device = {
-    &UART_9600_N1,
-    &_02A6[0],
-    &_02A6Protocol,
-    null,
-    null,
-};
-
 static const ModbusGetCmd_t _02E1[] = {
     {0x02,  2501,  2532},
 	{0x02,  2565,  2573},
@@ -1208,19 +1201,6 @@ const ModbusDeviceHead_t _02E1Device = {
     &UART_9600_N1,
     &_02E1[0],
     &_02E1Protocol,
-    null,
-    null,
-};
-
-static const ModbusGetCmd_t _02D4[] = {
-    {3, 0 ,5 },
-    {3, 5 ,16},
-};
-static const ModbusGetCmdTab_t _02D4Protocol = PROTOCOL_TABER(_02D4, 1, 0x02D4);
-const ModbusDeviceHead_t _02D4Device = {
-    &UART_9600_N1,
-    &_02D4[0],
-    &_02D4Protocol,
     null,
     null,
 };
@@ -1595,7 +1575,7 @@ const ModbusDeviceHead_t ChintDevice = {
 
 static const ModbusGetCmd_t kostal[] = {
 	{0x03, 30000, 30106},
-    {0x03, 30300, 30300},
+	{0x03, 30300, 30300},
 };
 static const ModbusGetCmdTab_t kostalProtocol = PROTOCOL_TABER(kostal, 0, 0x02C4);
 const ModbusDeviceHead_t KostalDevice = {
@@ -2160,19 +2140,6 @@ const ModbusDeviceHead_t _0708Device = {
 	null,
 }; 
 
-static const ModbusGetCmd_t _0721[] = {
-    {3, 0  ,49 },
-    {3, 51 ,51 },
-};
-static const ModbusGetCmdTab_t _0721Protocol = PROTOCOL_TABER(_0721, 0, 0x0721);
-const ModbusDeviceHead_t _0721Device = {
-	&UART_38400_N1,
-	&_0721[0],
-	&_0721Protocol,
-	null,
-	null,
-}; 
-
 static const ModbusGetCmd_t _0804[] = {
 	{0x03, 0x0000, 0x0005},
 };
@@ -2315,34 +2282,7 @@ const ModbusDeviceHead_t KelongDevice = {
 	null,
 	null,
 }; 
-
-static const ModbusGetCmd_t _090B[] = {
-    {0x03, 1 , 80 },
-    {0x04, 81, 140},
-};
-static const ModbusGetCmdTab_t _090BProtocol = PROTOCOL_TABER(_090B, 0, 0x090B);
-const ModbusDeviceHead_t _090BDevice = {
-	&UART_9600_N1,
-	&_090B[0],
-	&_090BProtocol,
-	null,
-	null,
-}; 
-
-static const ModbusGetCmd_t _090C[] = {
-    {0x03, 000,015},
-    {0x04, 0  ,125},
-};
-static const ModbusGetCmdTab_t _090CProtocol = PROTOCOL_TABER(_090C, 0, 0x090C);
-const ModbusDeviceHead_t _090CDevice = {
-	&UART_9600_N1,
-	&_090C[0],
-	&_090CProtocol,
-	null,
-	null,
-}; 
-
-//锟斤拷锟绞碉拷锟斤拷-MODBU通讯锟斤拷协锟斤拷
+//閿熸枻鎷烽敓缁炵鎷烽敓鏂ゆ嫹-MODBU閫氳閿熸枻鎷峰崗閿熸枻鎷�
 static const ModbusGetCmd_t _090F[] = {
 	{0x04,   1,   69},
     {0x04,  1001,  1036},
@@ -2435,21 +2375,6 @@ const ModbusDeviceHead_t _092DDevice = {
 	&UART_9600_N1,
 	&_092D[0],
 	&_092DProtocol,
-	null,
-	null,
-}; 
-
-static const ModbusGetCmd_t _0911[] = {
-    {0x04, 0    ,46     },
-    {0x04, 200  ,299    },
-    {0x04, 2000 ,2039   },
-    {0x04, 2100 ,2123   },
-};
-static const ModbusGetCmdTab_t _0911Protocol = PROTOCOL_TABER(_0911, 0, 0x0911);
-const ModbusDeviceHead_t _0911Device = {
-	&UART_9600_N1,
-	&_0911[0],
-	&_0911Protocol,
 	null,
 	null,
 }; 
@@ -2807,42 +2732,6 @@ const ModbusDeviceHead_t _0945Device = {
     null,
 };
 
-
-
-static const ModbusGetCmd_t _0948[] = {
-    {3, 100 ,102},
-    {3, 104 ,104},
-    {3, 106 ,106},
-    {3, 108 ,110},
-    {3, 171 ,198},
-    {3, 200 ,221},
-    {3, 223 ,235},
-    {3, 300 ,311},
-    {3, 313 ,317},
-    {3, 320 ,339},
-    {3, 404 ,407},
-    {3, 420 ,422},
-    {3, 427 ,428},
-    {3, 450 ,450},
-    {3, 457 ,457},
-    {3, 462 ,462},
-    {3, 468 ,468},
-    {3, 500 ,500},
-    {3, 534 ,534},
-    {3, 600 ,600},
-    {3, 634 ,634},
-    {3, 641 ,645},
-    {3, 745 ,745},
-};
-static const ModbusGetCmdTab_t _0948Protocol = PROTOCOL_TABER(_0948, 0, 0x0948);
-const ModbusDeviceHead_t _0948Device = {
-    &UART_9600_N1,
-    &_0948[0],
-    &_0948Protocol,
-    null,
-    null,
-};
-
 static const ModbusGetCmd_t _094B[] = {
     {0x02, 0x5000 ,0x5000},
     {0x02, 0x5001 ,0x5001},
@@ -2928,40 +2817,6 @@ const ModbusDeviceHead_t _094FDevice = {
 	null,
 };
 
-static const ModbusGetCmd_t _0958[] = {
-    {3, 0  ,15 },
-    {3, 18 ,40 },
-    {3, 43 ,43 },
-    {3, 76 ,82 },
-    {4, 00 ,78 },
-    {4, 80 ,88 },
-    {4, 93 ,96 },
-};
-static const ModbusGetCmdTab_t _0958Protocol = PROTOCOL_TABER(_0958, 0, 0x0958);
-const ModbusDeviceHead_t _0958Device = {
-	&UART_9600_N1,
-	&_0958[0],
-	&_0958Protocol,
-	null,
-	null,
-};
-
-static const ModbusGetCmd_t _0959[] = {
-    {2, 0 ,16 },
-    {4, 0 ,1  },
-    {4, 5 ,28 },
-    {4, 29,31 },
-    {4, 32,77 },
-};
-static const ModbusGetCmdTab_t _0959Protocol = PROTOCOL_TABER(_0959, 1, 0x0959);
-const ModbusDeviceHead_t _0959Device = {
-	&UART_9600_N1,
-	&_0959[0],
-	&_0959Protocol,
-	null,
-	null,
-};
-
 static const ModbusGetCmd_t _0965[] = {
     {0x02, 2501 ,2502},
     {0x02, 2505 ,2506},
@@ -2994,34 +2849,6 @@ const ModbusDeviceHead_t _0971Device = {
 	&UART_9600_N1,
 	&_0971[0],
 	&_0971Protocol,
-	null,
-	null,
-};
-
-static const ModbusGetCmd_t _0973[] = {
-    {0x03, 4000 ,4024},
-};
-static const ModbusGetCmdTab_t _0973Protocol = PROTOCOL_TABER(_0973, 0, 0x0973);
-const ModbusDeviceHead_t _0973Device = {
-	&UART_9600_N1,
-	&_0973[0],
-	&_0973Protocol,
-	null,
-	null,
-};
-
-static const ModbusGetCmd_t _0975[] = {
-    {3, 0  ,29 },
-    {4, 0  ,17 },
-    {4, 24 ,73 },
-    {4, 18 ,23 },
-    {4, 74 ,181},
-};
-static const ModbusGetCmdTab_t _0975Protocol = PROTOCOL_TABER(_0975, 1, 0x0975);
-const ModbusDeviceHead_t _0975Device = {
-	&UART_9600_N1,
-	&_0975[0],
-	&_0975Protocol,
 	null,
 	null,
 };
@@ -3076,108 +2903,6 @@ const ModbusDeviceHead_t _0E0EDevice = {
     &UART_9600_N1,
     &_0E0E[0],
     &_0E0EProtocol,
-    null,
-    null,
-};
-
-static const ModbusGetCmd_t _1201[] = {
-    {3, 6656 ,6656},
-    {3, 6672 ,6672},
-    {3, 6681 ,6681},
-    {3, 6684 ,6684},
-    {3, 6691 ,6691},
-    {3, 6715 ,6715},
-    {3, 6724 ,6726},
-    {3, 6728 ,6728},
-    {3, 4097 ,4127},
-    {3, 4129 ,4132},
-    {3, 4135 ,4136},
-    {3, 4151 ,4161},
-};
-static const ModbusGetCmdTab_t _1201Protocol = PROTOCOL_TABER(_1201, 0, 0x1201);
-const ModbusDeviceHead_t _1201Device = {
-    &UART_9600_N1,
-    &_1201[0],
-    &_1201Protocol,
-    null,
-    null,
-};
-
-static const ModbusGetCmd_t _1203[] = {
-    {4, 2999 ,3014},
-    {4, 3021 ,3028},
-    {4, 3030 ,3047},
-    {4, 3060 ,3063},
-    {4, 3288 ,3334},
-};
-static const ModbusGetCmdTab_t _1203Protocol = PROTOCOL_TABER(_1203, 0, 0x1203);
-const ModbusDeviceHead_t _1203Device = {
-    &UART_9600_N1,
-    &_1203[0],
-    &_1203Protocol,
-    null,
-    null,
-};
-
-static const ModbusGetCmd_t _1205[] = {
-    {3, 30000 ,30055},
-    {3, 30060 ,30069},
-    {3, 30078 ,30099},
-    {3, 30107 ,30119},
-    {3, 30122 ,30123},
-    {3, 30161 ,30161},
-    {3, 30170 ,30172},
-    {3, 30175 ,30177},
-    {3, 30190 ,30212},
-    {3, 30221 ,30229},
-    {3, 30232 ,30233},
-    {3, 30240 ,30243},
-    {3, 30250 ,30274},
-};
-static const ModbusGetCmdTab_t _1205Protocol = PROTOCOL_TABER(_1205, 0, 0x1205);
-const ModbusDeviceHead_t _1205Device = {
-    &UART_9600_N1,
-    &_1205[0],
-    &_1205Protocol,
-    null,
-    null,
-};
-
-static const ModbusGetCmd_t _1208[] = {
-    {4, 0   ,95 },
-    {4, 256 ,262},
-    {4, 384 ,393},
-    {4, 395 ,399},
-    {4, 512 ,530},
-    {4, 533 ,537},
-    {4, 640 ,698},
-};
-static const ModbusGetCmdTab_t _1208Protocol = PROTOCOL_TABER(_1208, 0, 0x1208);
-const ModbusDeviceHead_t _1208Device = {
-    &UART_9600_N1,
-    &_1208[0],
-    &_1208Protocol,
-    null,
-    null,
-};
-
-static const ModbusGetCmd_t _1209[] = {
-    {4, 18   ,49   },
-    {4, 86   ,95   },
-    {4, 256  ,262  },
-    {4, 384  ,399  },
-    {4, 512  ,514  },
-    {4, 517  ,519  },
-    {4, 531  ,531  },
-    {4, 534  ,537  },
-    {4, 640  ,656  },
-    {3, 8967 ,8970 },
-};
-static const ModbusGetCmdTab_t _1209Protocol = PROTOCOL_TABER(_1209, 0, 0x1209);
-const ModbusDeviceHead_t _1209Device = {
-    &UART_9600_N1,
-    &_1209[0],
-    &_1209Protocol,
     null,
     null,
 };
@@ -3399,6 +3124,21 @@ const ModbusDeviceHead_t _0204Device = {
     &UART_9600_N1,
     &_0E0E[0],
     &_0204Protocol,
+    null,
+    null,
+};
+
+static const ModbusGetCmd_t _1001[] = {
+    {0x03, 0x000A ,0x0026},
+    {0x03, 0x00FD ,0x012D},
+    {0x03, 0xE000 ,0xE021},
+    {0x03, 0xE080 ,0xE0B7},
+};
+static const ModbusGetCmdTab_t _1001Protocol = PROTOCOL_TABER(_1001, 0, 0x1001);
+const ModbusDeviceHead_t _1001Device = {
+    &UART_9600_N1,
+    &_1001[0],
+    &_1001Protocol,
     null,
     null,
 };

@@ -16,7 +16,7 @@
 #define DEVICE_PV_GET_ID		(DEVICE_PV_SCAN_ID + 1)
 
 
-#define DEVICE_TASK				subtask2_id
+//#define DEVICE_TASK				subtask2_id
 
 
 typedef void (*DeviceCallBack)(ListHandler_t *cmdList);
