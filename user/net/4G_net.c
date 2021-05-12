@@ -84,31 +84,31 @@ void proc_net_task(s32_t taskId) {
       case APP_MSG_UART_READY:
         APP_DEBUG("Net task APP_MSG_UART_READY\r\n");
         L610Net_init();
-        Beep_On(1); // 上电后响1声
+        //Beep_On(1); // 上电后响1声
         //ssl_relink();
         break;
       case NET_MSG_SIM_INSERTED:
         APP_DEBUG("Net task NET_MSG_SIM_INSERTED\r\n");
-        Eybpub_UT_SendMessage(APP_TASK, NET_MSG_SIM_INSERTED, 0, 0,0);
+        Ql_OS_SendMessage(APP_TASK, NET_MSG_SIM_INSERTED, 0, 0,0);
         break;
       case NET_MSG_SIM_NOT_INSERTED:
         APP_DEBUG("Net task NET_MSG_SIM_NOT_INSERTED\r\n");
-        Eybpub_UT_SendMessage(APP_TASK, NET_MSG_SIM_NOT_INSERTED, 0, 0,0);
-        Beep_On(5); // 未插卡响5声
+        Ql_OS_SendMessage(APP_TASK, NET_MSG_SIM_NOT_INSERTED, 0, 0,0);
+        //Beep_On(5); // 未插卡响5声
         break;
       case NET_MSG_SIM_READY:
         APP_DEBUG("Net task NET_MSG_SIM_READY\r\n");
-        Eybpub_UT_SendMessage(APP_TASK, NET_MSG_SIM_READY, 0, 0,0);
+        Ql_OS_SendMessage(APP_TASK, NET_MSG_SIM_READY, 0, 0,0);
         break;
       case NET_MSG_SIM_FAIL:
         APP_DEBUG("Net task NET_MSG_SIM_FAIL\r\n");
-        Eybpub_UT_SendMessage(APP_TASK, NET_MSG_SIM_FAIL, 0, 0,0);
+        Ql_OS_SendMessage(APP_TASK, NET_MSG_SIM_FAIL, 0, 0,0);
         break;
       case NET_MSG_GSM_READY:
         APP_DEBUG("Net task NET_MSG_GSM_READY\r\n");
         GSMLED_On();
         L610Net_ready();
-        Eybpub_UT_SendMessage(APP_TASK, NET_MSG_GSM_READY, 0,0 ,0);
+        Ql_OS_SendMessage(APP_TASK, NET_MSG_GSM_READY, 0,0 ,0);
 
         //SSL_init();  
         //ssl_relink(); 
@@ -116,14 +116,14 @@ void proc_net_task(s32_t taskId) {
       case NET_MSG_GSM_FAIL:
         APP_DEBUG("Net task NET_MSG_GSM_FAIL\r\n");
         GSMLED_Off();
-        Eybpub_UT_SendMessage(APP_TASK, NET_MSG_GSM_FAIL, 0, 0,0);
+        Ql_OS_SendMessage(APP_TASK, NET_MSG_GSM_FAIL, 0, 0,0);
         break;
       case NET_MSG_DNS_READY:
-        Eybpub_UT_SendMessage(APP_TASK, NET_MSG_DNS_READY, 0, 0,0);
+        Ql_OS_SendMessage(APP_TASK, NET_MSG_DNS_READY, 0, 0,0);
         APP_DEBUG("Net task NET_MSG_DNS_READY\r\n");
         break;
       case NET_MSG_DNS_FAIL:
-        Eybpub_UT_SendMessage(APP_TASK, NET_MSG_DNS_FAIL, 0, 0,0);
+        Ql_OS_SendMessage(APP_TASK, NET_MSG_DNS_FAIL, 0, 0,0);
         APP_DEBUG("Net task NET_MSG_DNS_FAIL\r\n");
         break;
       case APP_MSG_TIMER_ID:  // 从APP task传递过来的定时器(1000 ms)消息
@@ -188,7 +188,7 @@ void Net_send(u8_t nIndex, u8_t *pData, u16_t len) {
     sendData->buf.payload = (u8_t *)(sendData + 1);
     r_memcpy(sendData->buf.payload, pData, len);
     list_bottomInsert(&netSendPakege, sendData);    
-  //  Eybpub_UT_SendMessage(EYBNET_TASK, NET_CMD_SENDDATA_ID, 0, 0);    //Luee 改为统一发送
+  //  Ql_OS_SendMessage(EYBNET_TASK, NET_CMD_SENDDATA_ID, 0, 0);    //Luee 改为统一发送
     tcp_send_counter_clear();     //立即发送
   } else {
     APP_DEBUG("memory apply full!!!");
@@ -233,7 +233,7 @@ static void Net_sendData(void) {
 	}	
   }
   tcp_sending=0;
-//  Eybpub_UT_SendMessage(EYBNET_TASK, NET_CMD_SENDDATA_ID, 2, 0);    // 确保netSendPackage里面没有数据了
+//  Ql_OS_SendMessage(EYBNET_TASK, NET_CMD_SENDDATA_ID, 2, 0);    // 确保netSendPackage里面没有数据了
 }
 
 static void tcp_send(void)

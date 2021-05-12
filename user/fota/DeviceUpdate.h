@@ -7,8 +7,8 @@
 #ifndef __DEVICE_UPDATE_
 #define __DEVICE_UPDATE_
 
-#include "ql_type.h"
-#include "File.h"
+//#include "ql_type.h"
+#include "pub_File.h"
 
 #define DEVICE_UPDATE_READY_ID 		(0x0F0000)
 #define DEVICE_UPDATE_END_ID		(0x0F1000)

@@ -18,6 +18,7 @@
 #include "HashMD5.h"
 #include "ieee754_float.h"
 #include "char2negative.h"
+#include "struct_type.h"
 //app
 #include "Debug.h"
 #include "utility.h"
@@ -35,6 +36,16 @@
 #include "CommonServer.h"
 #include "ModbusDevice.h"
 
+#include "DeviceIO.h"
+#include "Device.h"
+#include "Protocol.h"
+#include "eybond.h"
+#include "CommonServer.h"
+#include "grid_tool.h"
+#include "ModbusDevice.h"
+#include "ieee754_float.h"
+#include "char2negative.h"
+#include "anti_reflux.h"
 
 static u8_t Para_Init_flag = 0;
 char produc_save_flag = 0;
@@ -55,6 +66,7 @@ void parametr_get(u32_t number, Buffer_t *databuf) {
 
   int j = 0;
 
+
  // if (databuf == NULL||device_data_geting) {
   if (databuf == NULL) {
 
@@ -63,8 +75,9 @@ void parametr_get(u32_t number, Buffer_t *databuf) {
     len=0;
     goto GETFAIL;
   }
-//  APP_DEBUG("para_meter get begin:%d!\r\n", number);
-  
+
+
+ 
   for (j = 0; j < number_of_array_elements; j++) {
     if (number == PDT[j].num) {
       
@@ -181,6 +194,8 @@ void parametr_get(u32_t number, Buffer_t *databuf) {
         r_memset(buf_value, 0, sizeof(char) * 64);    
         PDT[j].rFunc(&PDT[j], buf_value, &len);
       }
+ 
+
 GETFAIL:
       if(len==0){
         r_strcpy(buf_value,"para get fail!\r\n");
@@ -209,6 +224,8 @@ GETFAIL:
     }
     
   }
+
+ 
   parageting=0;   //参数获取完成
 //  APP_DEBUG("index: %d totle: %d\r\n", j, number_of_array_elements);
   if (j >= number_of_array_elements) {
@@ -513,9 +530,11 @@ void main_parametr_update(void) { // 由于APP固件升级会让系统保存的�
 #endif
 
 ServerAddr_t *ServerAdrrGet(u8_t num) {
+  
   Buffer_t buf;
   Buffer_t portBuf;
   ServerAddr_t *serverAddr = null;
+
   r_memset(&buf, 0, sizeof(Buffer_t));
   r_memset(&portBuf, 0, sizeof(Buffer_t));
   parametr_get(num, &buf);  // TODO获取的buf长度有问题?
@@ -576,6 +595,7 @@ ServerAddr_t *ServerAdrrGet(u8_t num) {
   buf.size = 0;
 
   return serverAddr;
+
 }
 
 // void SysPara_init(void) {

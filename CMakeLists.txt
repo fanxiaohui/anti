@@ -46,6 +46,8 @@ include_directories(user/server/CommonServer)
 include_directories(user/server/Eybond)
 include_directories(user/server/StateGrid)
 include_directories(user/ble)
+include_directories(user/anti_reflux)
+include_directories(user/anti_reflux/Device)
 
 function(cpp_only target file)
     add_library(${target} OBJECT ${file})
@@ -136,10 +138,14 @@ set(CUSTOMER_ID 000)
     file(GLOB LIB_FILES user/Lib/*.c)
     file(GLOB DEVICE_FILES user/device/*.c)
     file(GLOB MANUFACTOR_FILES user/device/Manufactor/*.c)
+    file(GLOB NET_FILES user/net/*.c)
+    file(GLOB EYBOND_FILES user/server/Eybond/*.c)
     add_appimg(${target} ${flash_ldscript}
     ${MAIN_FILES}
     ${LIB_FILES}
     ${MANUFACTOR_FILES}
+    ${NET_FILES}
+    ${EYBOND_FILES}
     user/public/Debug.c
     user/public/hard_watchdog.c
     user/public/utility.c
@@ -148,12 +154,12 @@ set(CUSTOMER_ID 000)
     user/public/data_collector_parameter_table.c
     user/public/parameter_number_and_value.c
     user/public/SysPara_File.c
-    #user/public/history.c
+    user/public/history.c
     user/public/appTask.c
     user/public/Status.c
+    user/public/pub_File.c
     user/ble/ble_task.c
-    user/server/Eybond/eybond.c
-    #user/device/Manufactor/Sineng.c
+    user/anti_reflux/anti_reflux.c
     )   
 
     target_link_libraries(${target} PRIVATE ${libc_file_name} ${libm_file_name} ${libgcc_file_name})

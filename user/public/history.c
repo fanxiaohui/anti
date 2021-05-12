@@ -16,6 +16,7 @@
 #include "r_memory.h"
 #include "list.h"
 #include "HashMD5.h"
+#include "Debug.h"
 
 #include "history.h"
 #include "grid_tool.h"

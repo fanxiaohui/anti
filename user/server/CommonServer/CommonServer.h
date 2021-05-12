@@ -43,8 +43,8 @@ typedef struct{
   u16 rec_counter;    //receiving required time
 }net_para_t;
 
-extern net_para_t eybnet_para;
-extern net_para_t statenet_para;
+net_para_t eybnet_para;
+net_para_t statenet_para;
 
 void proc_commonServer_task(s32_t taskId);
 void CommonServerDataSend(Buffer_t *buf);

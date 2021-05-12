@@ -7,11 +7,11 @@
 #ifndef __UPDATE_TASK_
 #define __UPDATE_TASK_
 
-#include "ql_type.h"
+//#include "ql_type.h"
 
 #define APP_TASK_ID		5
 
-#define UPDATE_TASK			subtask4_id
+//#define UPDATE_TASK			subtask4_id
 #define SELF_UPDATE_ID      (0x00F600)
 #define DEVICE_UPDATE_ID	(0x00F000)
 

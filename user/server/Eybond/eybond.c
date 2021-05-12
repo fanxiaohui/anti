@@ -96,7 +96,7 @@ const funcationTab_t funTab[] = {
 *******************************************************************************/
 void proc_eybond_task(s32 taskId)
 {
-	u8 ret;
+	u8 ret=0xFF;
 	ST_MSG msg;
 	u8 count = 0;
 	APP_DEBUG("Eybond task run!!\r\n");
@@ -105,7 +105,7 @@ void proc_eybond_task(s32 taskId)
     r_memset(&msg,0,sizeof(ST_MSG));
 	list_init(&rcveList);
 		
-    while(TRUE)
+    while(1)
     {
         fibo_queue_get(EYBOND_TASK, (void *)&msg, 0);
         switch(msg.message)
@@ -115,16 +115,19 @@ void proc_eybond_task(s32 taskId)
 				sPort = 0xff;
 			case APP_MSG_DEVTIMER_ID:
 				ret = Net_status(sPort);
+
 				if (ret == 0xFF)
 				{
                     APP_DEBUG("Eybond start relink socket\r\n");
-					ServerAddr_t *eybondServer = ServerAdrrGet(EYBOND_SERVER_ADDR);
-					if (eybondServer != null)
+                    
+					//ServerAddr_t *eybondServer = ServerAdrrGet(EYBOND_SERVER_ADDR);
+					//if (eybondServer != null)
+                    if(1)
 					{
                         APP_DEBUG("Eybond Connect sever socket\r\n");
 //			  			overtime = 0;
-						sPort = Net_connect(1, eybondServer->addr, eybondServer->port, ESP_callback);
-						memory_release(eybondServer);
+						//sPort = Net_connect(1, eybondServer->addr, eybondServer->port, ESP_callback);
+						//memory_release(eybondServer);
 					}
                     else
                     {
@@ -152,16 +155,14 @@ void proc_eybond_task(s32 taskId)
                 }
 
 
-				//if ((runTimeCheck(4, 19) == 0 ) &&(0 >= (historySaveCnt--))){
-				//	historySave();
-				//}
             case EYBOND_DATA_PROCESS:
-                    ESP_process();
+                    //ESP_process();
                 break;
 	        default:
 	            break;
         }
     }
+
 }
 
 /*******************************************************************************            
